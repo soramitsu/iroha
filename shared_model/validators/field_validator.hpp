@@ -50,6 +50,18 @@ namespace shared_model {
       void validateAssetId(ReasonsGroupType &reason,
                            const interface::types::AssetIdType &asset_id) const;
 
+      void validateCaller(ReasonsGroupType &reason,
+                          const interface::types::AccountIdType &caller) const;
+
+      void validateCallee(ReasonsGroupType &reason,
+                          const interface::types::AccountIdType &callee) const;
+
+      void validateCode(ReasonsGroupType &reason,
+                        const interface::types::SmartContractCodeType &code) const;
+
+      void validateInput(ReasonsGroupType &reason,
+                        const interface::types::SmartContractCodeType &input) const;
+
       void validatePeer(ReasonsGroupType &reason,
                         const interface::Peer &peer) const;
 
@@ -192,6 +204,7 @@ namespace shared_model {
       const static std::string asset_id_pattern_;
       const static std::string detail_key_pattern_;
       const static std::string role_id_pattern_;
+      const static std::string bytecode_pattern_;
 
       const static std::regex account_name_regex_;
       const static std::regex asset_name_regex_;
@@ -202,6 +215,7 @@ namespace shared_model {
       const static std::regex asset_id_regex_;
       const static std::regex detail_key_regex_;
       const static std::regex role_id_regex_;
+      const static std::regex bytecode_regex_;
 
       // gap for future transactions
       time_t future_gap_;
