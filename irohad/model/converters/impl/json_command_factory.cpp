@@ -10,6 +10,7 @@
 #include "model/commands/add_asset_quantity.hpp"
 #include "model/commands/add_peer.hpp"
 #include "model/commands/add_signatory.hpp"
+#include "model/commands/add_smart_contract.hpp"
 #include "model/commands/append_role.hpp"
 #include "model/commands/create_account.hpp"
 #include "model/commands/create_asset.hpp"
@@ -56,6 +57,7 @@ namespace iroha {
              &JsonCommandFactory::serializeSubtractAssetQuantity},
             {typeid(AddPeer), &JsonCommandFactory::serializeAddPeer},
             {typeid(AddSignatory), &JsonCommandFactory::serializeAddSignatory},
+            {typeid(AddSmartContract), &JsonCommandFactory::serializeAddSmartContract},
             {typeid(CreateAccount),
              &JsonCommandFactory::serializeCreateAccount},
             {typeid(CreateAsset), &JsonCommandFactory::serializeCreateAsset},
@@ -82,6 +84,7 @@ namespace iroha {
              &JsonCommandFactory::deserializeSubtractAssetQuantity},
             {"AddPeer", &JsonCommandFactory::deserializeAddPeer},
             {"AddSignatory", &JsonCommandFactory::deserializeAddSignatory},
+            {"AddSmartContract", &JsonCommandFactory::deserializeAddSmartContract},
             {"CreateAccount", &JsonCommandFactory::deserializeCreateAccount},
             {"CreateAsset", &JsonCommandFactory::deserializeCreateAsset},
             {"CreateDomain", &JsonCommandFactory::deserializeCreateDomain},
@@ -176,6 +179,28 @@ namespace iroha {
         return make_optional_ptr<AddSignatory>()
             | des.String(&AddSignatory::account_id, "account_id")
             | des.String(&AddSignatory::pubkey, "pubkey") | toCommand;
+      }
+
+      // AddSmartContract
+      Document JsonCommandFactory::serializeAddSmartContract(
+          std::shared_ptr<Command> command) {
+        auto add_smart_contract = static_cast<AddSmartContract *>(command.get());
+
+         Document document;
+        auto &allocator = document.GetAllocator();
+
+         document.SetObject();
+        document.AddMember("command_type", "AddSmartContract", allocator);
+        document.AddMember("code", add_smart_contract->code, allocator);
+
+         return document;
+      }
+
+       optional_ptr<Command> JsonCommandFactory::deserializeAddSmartContract(
+          const Value &document) {
+        auto des = makeFieldDeserializer(document);
+        return make_optional_ptr<AddSmartContract>()
+            | des.String(&AddSmartContract::code, "code") | toCommand;
       }
 
       // CreateAccount

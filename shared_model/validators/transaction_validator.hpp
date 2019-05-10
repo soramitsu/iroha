@@ -12,6 +12,7 @@
 #include "interfaces/commands/add_asset_quantity.hpp"
 #include "interfaces/commands/add_peer.hpp"
 #include "interfaces/commands/add_signatory.hpp"
+#include "interfaces/commands/add_smart_contract.hpp"
 #include "interfaces/commands/append_role.hpp"
 #include "interfaces/commands/command.hpp"
 #include "interfaces/commands/compare_and_set_account_detail.hpp"
@@ -82,6 +83,16 @@ namespace shared_model {
         validator_.validateAccountId(reason, as.accountId());
         validator_.validatePubkey(reason, as.pubkey());
 
+        return reason;
+      }
+
+      ReasonsGroupType operator()(const interface::AddSmartContract &asc) const {
+        // TODO(IvanTyulyandin): it is mock
+        ReasonsGroupType reason;
+        addInvalidCommand(reason, "AddSmartContract");
+
+         // TODO(IvanTyulyandin): next function only checks code size
+        validator_.validateCode(reason, asc.code());
         return reason;
       }
 

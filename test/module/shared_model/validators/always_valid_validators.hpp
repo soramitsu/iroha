@@ -23,6 +23,8 @@ namespace shared_model {
       template <typename... Args>
       void validateAssetId(Args...) const {}
       template <typename... Args>
+      void validateCode(Args...) const {}
+      template <typename... Args>
       void validatePeer(Args...) const {}
       template <typename... Args>
       void validateAmount(Args...) const {}

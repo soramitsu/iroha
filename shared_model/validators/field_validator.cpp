@@ -97,6 +97,19 @@ namespace shared_model {
       }
     }
 
+    void FieldValidator::validateCode(
+        ReasonsGroupType &reason,
+        const interface::types::SmartContractCodeType &code) const {
+        // TODO(IvanTyulyandin): add code validator
+        // this is mock for tests to be passed
+        if (code.empty()) {
+          auto message =
+              boost::format("Smart contract code size must be greater than 0")
+                  .str();
+          reason.second.push_back(std::move(message));
+        }
+    }
+
     void FieldValidator::validatePeer(ReasonsGroupType &reason,
                                       const interface::Peer &peer) const {
       validatePeerAddress(reason, peer.address());

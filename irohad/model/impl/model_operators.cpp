@@ -10,6 +10,7 @@
 #include "model/commands/add_asset_quantity.hpp"
 #include "model/commands/add_peer.hpp"
 #include "model/commands/add_signatory.hpp"
+#include "model/commands/add_smart_contract.hpp"
 #include "model/commands/append_role.hpp"
 #include "model/commands/create_account.hpp"
 #include "model/commands/create_asset.hpp"
@@ -119,6 +120,15 @@ namespace iroha {
       return add_signatory.account_id == account_id
           && add_signatory.pubkey == pubkey;
     }
+
+    /* AddSmartContract */
+    bool AddSmartContract::operator==(const Command &command) const {
+      if (! instanceof <AddSmartContract>(command))
+        return false;
+      auto add_smart_contract = static_cast<const AddSmartContract &>(command);
+      return add_smart_contract.code == code;
+    }
+
 
     /* CreateAccount */
     bool CreateAccount::operator==(const Command &command) const {

@@ -10,6 +10,7 @@
 #include "model/commands/add_asset_quantity.hpp"
 #include "model/commands/add_peer.hpp"
 #include "model/commands/add_signatory.hpp"
+#include "model/commands/add_smart_contract.hpp"
 #include "model/commands/append_role.hpp"
 #include "model/commands/create_account.hpp"
 #include "model/commands/create_asset.hpp"
@@ -51,6 +52,7 @@ TEST_F(JsonCommandTest, ClassHandlerTest) {
       std::make_shared<SubtractAssetQuantity>(),
       std::make_shared<AddPeer>(),
       std::make_shared<AddSignatory>(),
+      std::make_shared<AddSmartContract>(),
       std::make_shared<CreateAccount>(),
       std::make_shared<CreateAsset>("", "", 0),
       std::make_shared<CreateDomain>(),
@@ -156,6 +158,18 @@ TEST_F(JsonCommandTest, add_signatory_abstract_factory) {
   auto orig_command = std::make_shared<AddSignatory>();
   orig_command->account_id = "23";
 
+  command_converter_test(orig_command);
+}
+
+TEST_F(JsonCommandTest, add_smart_contract) {
+  auto orig_command = std::make_shared<AddSmartContract>();
+  orig_command->code = "What should I put here?";
+
+  auto json_command = factory.serializeAddSmartContract(orig_command);
+  auto serial_command = factory.deserializeAddSmartContract(json_command);
+
+  ASSERT_TRUE(serial_command);
+  ASSERT_EQ(*orig_command, **serial_command);
   command_converter_test(orig_command);
 }
 

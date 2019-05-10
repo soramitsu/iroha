@@ -14,6 +14,7 @@ namespace shared_model {
     class AddAssetQuantity;
     class AddPeer;
     class AddSignatory;
+    class AddSmartContract;
     class AppendRole;
     class Command;
     class CreateAccount;
@@ -78,6 +79,9 @@ namespace iroha {
 
       virtual CommandResult operator()(
           const shared_model::interface::AddSignatory &command) = 0;
+
+      virtual CommandResult operator()(
+          const shared_model::interface::AddSmartContract &command) = 0;
 
       virtual CommandResult operator()(
           const shared_model::interface::AppendRole &command) = 0;

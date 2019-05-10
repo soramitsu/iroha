@@ -229,6 +229,21 @@ namespace iroha {
         return add_signatory;
       }
 
+      // add smart contract
+      protocol::AddSmartContract PbCommandFactory::serializeAddSmartContract(
+          const model::AddSmartContract &add_smart_contract) {
+        protocol::AddSmartContract pb_add_smart_contract;
+        pb_add_smart_contract.set_code(add_smart_contract.code);
+        return pb_add_smart_contract;
+      }
+
+       model::AddSmartContract PbCommandFactory::deserializeAddSmartContract(
+          const protocol::AddSmartContract &pb_add_smart_contract) {
+        model::AddSmartContract add_smart_contract;
+        add_smart_contract.code = pb_add_smart_contract.code();
+        return add_smart_contract;
+      }
+
       // create asset
       protocol::CreateAsset PbCommandFactory::serializeCreateAsset(
           const model::CreateAsset &create_asset) {
@@ -530,6 +545,14 @@ namespace iroha {
               new protocol::AddSignatory(serialized));
         }
 
+        // -----|AddSmartContract|-----
+        if (instanceof <model::AddSmartContract>(command)) {
+          auto serialized = commandFactory.serializeAddSmartContract(
+              static_cast<const model::AddSmartContract &>(command));
+          cmd.set_allocated_add_smart_contract(
+              new protocol::AddSmartContract(serialized));
+        }
+
         // -----|CreateAsset|-----
         if (instanceof <model::CreateAsset>(command)) {
           auto serialized = commandFactory.serializeCreateAsset(
@@ -656,6 +679,13 @@ namespace iroha {
           auto pb_command = command.add_signatory();
           auto cmd = commandFactory.deserializeAddSignatory(pb_command);
           val = std::make_shared<model::AddSignatory>(cmd);
+        }
+
+        // -----|AddSmartContract|-----
+        if (command.has_add_smart_contract()) {
+          auto pb_command = command.add_smart_contract();
+          auto cmd = commandFactory.deserializeAddSmartContract(pb_command);
+          val = std::make_shared<model::AddSmartContract>(cmd);
         }
 
         // -----|CreateAsset|-----

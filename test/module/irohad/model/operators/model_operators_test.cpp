@@ -8,6 +8,7 @@
 #include "model/commands/add_asset_quantity.hpp"
 #include "model/commands/add_peer.hpp"
 #include "model/commands/add_signatory.hpp"
+#include "model/commands/add_smart_contract.hpp"
 #include "model/commands/append_role.hpp"
 #include "model/commands/create_account.hpp"
 #include "model/commands/create_asset.hpp"
@@ -100,6 +101,24 @@ TEST(ModelOperatorTest, AddSignatoryTest) {
   second.account_id = "22";
   ASSERT_NE(first, second);
 }
+
+// -----|AddSmartContract|-----
+
+AddSmartContract createAddSmartContract() {
+  AddSmartContract add_smart_contract;
+  add_smart_contract.code = "MeGoCode";
+  return add_smart_contract;
+}
+
+TEST(ModelOperatorTest, AddSmartContract) {
+  auto first = createAddSmartContract();
+  auto second = createAddSmartContract();
+
+  ASSERT_EQ(first, second);
+  second.code = "NotMeGoCode";
+  ASSERT_NE(first, second);
+}
+
 
 // -----|CreateAccount|-----
 

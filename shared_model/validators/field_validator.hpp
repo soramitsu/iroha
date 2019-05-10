@@ -52,6 +52,9 @@ namespace shared_model {
       void validateAssetId(ReasonsGroupType &reason,
                            const interface::types::AssetIdType &asset_id) const;
 
+      void validateCode(ReasonsGroupType &reason,
+                        const interface::types::SmartContractCodeType &code) const;
+
       void validatePeer(ReasonsGroupType &reason,
                         const interface::Peer &peer) const;
 

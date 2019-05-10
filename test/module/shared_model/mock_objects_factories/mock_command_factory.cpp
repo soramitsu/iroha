@@ -71,6 +71,17 @@ namespace shared_model {
           });
     }
 
+    MockCommandFactory::FactoryResult<MockAddSmartContract>
+    MockCommandFactory::constructAddSmartContract(
+        const types::SmartContractCodeType &code) const {
+      return createFactoryResult<MockAddSmartContract>(
+          [&code](FactoryResult<MockAddSmartContract> specific_cmd_mock) {
+            ON_CALL(*specific_cmd_mock, code())
+                .WillByDefault(ReturnRefOfCopy(code));
+            return specific_cmd_mock;
+          });
+    }
+
     MockCommandFactory::FactoryResult<MockAppendRole>
     MockCommandFactory::constructAppendRole(
         const types::AccountIdType &account_id,

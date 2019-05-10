@@ -193,6 +193,19 @@ namespace shared_model {
         return removeSignatoryRaw(account_id, public_key.hex());
       }
 
+      auto addSmartContract(const interface::types::SmartContractCodeType &code)
+          const {
+        return addSmartContractRaw(code);
+      }
+
+      auto addSmartContractRaw(
+          const interface::types::SmartContractCodeType &code) const {
+        return addCommand([&](auto proto_command) {
+          auto command = proto_command->mutable_add_smart_contract();
+          command->set_code(code);
+        });
+      }
+
       auto appendRole(const interface::types::AccountIdType &account_id,
                       const interface::types::RoleIdType &role_name) const {
         return addCommand([&](auto proto_command) {

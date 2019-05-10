@@ -43,6 +43,12 @@ namespace iroha {
         optional_ptr<Command> deserializeAddSignatory(
             const rapidjson::Value &document);
 
+        // AddSignatory
+        rapidjson::Document serializeAddSmartContract(
+            std::shared_ptr<Command> command);
+        optional_ptr<Command> deserializeAddSmartContract(
+            const rapidjson::Value &document);
+
         // CreateAccount
         rapidjson::Document serializeCreateAccount(
             std::shared_ptr<Command> command);

@@ -13,6 +13,7 @@
 #include "model/commands/add_asset_quantity.hpp"
 #include "model/commands/add_peer.hpp"
 #include "model/commands/add_signatory.hpp"
+#include "model/commands/add_smart_contract.hpp"
 #include "model/commands/append_role.hpp"
 #include "model/commands/create_account.hpp"
 #include "model/commands/create_asset.hpp"
@@ -59,6 +60,12 @@ namespace iroha {
             const model::AddSignatory &addSignatory);
         model::AddSignatory deserializeAddSignatory(
             const protocol::AddSignatory &addSignatory);
+
+        // add smart contract
+        protocol::AddSmartContract serializeAddSmartContract(
+            const model::AddSmartContract &addSmartContract);
+        model::AddSmartContract deserializeAddSmartContract(
+            const protocol::AddSmartContract &addSmartContract);
 
         // create asset
         protocol::CreateAsset serializeCreateAsset(

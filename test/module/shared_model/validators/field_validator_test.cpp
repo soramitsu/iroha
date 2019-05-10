@@ -133,6 +133,12 @@ class FieldValidatorTest : public ValidatorsTest {
                                           &FieldValidatorTest::precision,
                                           precision_test_cases));
 
+    // TODO(Ivan Tyulyandin): add test cases for smart contract code
+    field_validators.insert(makeValidator("code",
+                                          &FieldValidator::validateCode,
+                                          &FieldValidatorTest::code,
+                                          {}));
+
     // TODO: add validation to all fields
     for (const auto &field : {"value",
                               "signature",
