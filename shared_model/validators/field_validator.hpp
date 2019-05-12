@@ -55,6 +55,9 @@ namespace shared_model {
       void validateCode(ReasonsGroupType &reason,
                         const interface::types::SmartContractCodeType &code) const;
 
+      void validateCallee(ReasonsGroupType &reason,
+                          const interface::types::AccountIdType &callee) const;
+
       void validatePeer(ReasonsGroupType &reason,
                         const interface::Peer &peer) const;
 

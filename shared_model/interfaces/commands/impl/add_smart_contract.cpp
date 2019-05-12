@@ -7,11 +7,13 @@ namespace shared_model {
       return detail::PrettyStringBuilder()
           .init("AddSmartContract")
           .append("code", code())
+          .append("callee", callee())
           .finalize();
     }
 
     bool AddSmartContract::operator==(const ModelType &rhs) const {
-      return code() == rhs.code();
+      return code() == rhs.code()
+        && callee() == rhs.callee();
     }
 
   }  // namespace interface

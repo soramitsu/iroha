@@ -234,6 +234,7 @@ class ValidatorsTest : public ::testing::Test {
     detail_key = "key";
     writer = "account@domain";
     code = "nonEmptySupaCode";
+    callee = "smartContractWillAddressTo";
 
     // size of public_key and hash are twice bigger `public_key_size` because it
     // is hex representation
@@ -273,6 +274,7 @@ class ValidatorsTest : public ::testing::Test {
   std::string hash;
   std::string writer;
   std::string code;
+  std::string callee;
   iroha::protocol::Transaction::Payload::BatchMeta batch_meta;
   shared_model::interface::permissions::Role model_role_permission;
   shared_model::interface::permissions::Grantable model_grantable_permission;

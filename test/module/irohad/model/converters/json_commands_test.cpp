@@ -164,6 +164,7 @@ TEST_F(JsonCommandTest, add_signatory_abstract_factory) {
 TEST_F(JsonCommandTest, add_smart_contract) {
   auto orig_command = std::make_shared<AddSmartContract>();
   orig_command->code = "What should I put here?";
+  orig_command->callee = "Who is Callee?";
 
   auto json_command = factory.serializeAddSmartContract(orig_command);
   auto serial_command = factory.deserializeAddSmartContract(json_command);

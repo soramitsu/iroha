@@ -27,6 +27,7 @@ message AddSignatory {
 
 message AddSmartContract {
     string code = 1;
+    string callee = 2;
 }
 
 message CreateAsset {

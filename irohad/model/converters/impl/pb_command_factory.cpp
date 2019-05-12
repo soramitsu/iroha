@@ -234,6 +234,7 @@ namespace iroha {
           const model::AddSmartContract &add_smart_contract) {
         protocol::AddSmartContract pb_add_smart_contract;
         pb_add_smart_contract.set_code(add_smart_contract.code);
+        pb_add_smart_contract.set_callee(add_smart_contract.callee);
         return pb_add_smart_contract;
       }
 
@@ -241,6 +242,7 @@ namespace iroha {
           const protocol::AddSmartContract &pb_add_smart_contract) {
         model::AddSmartContract add_smart_contract;
         add_smart_contract.code = pb_add_smart_contract.code();
+        add_smart_contract.callee = pb_add_smart_contract.callee();
         return add_smart_contract;
       }
 

@@ -186,12 +186,13 @@ namespace iroha {
           std::shared_ptr<Command> command) {
         auto add_smart_contract = static_cast<AddSmartContract *>(command.get());
 
-         Document document;
+        Document document;
         auto &allocator = document.GetAllocator();
 
-         document.SetObject();
+        document.SetObject();
         document.AddMember("command_type", "AddSmartContract", allocator);
         document.AddMember("code", add_smart_contract->code, allocator);
+        document.AddMember("callee", add_smart_contract->callee, allocator);
 
          return document;
       }
@@ -200,7 +201,8 @@ namespace iroha {
           const Value &document) {
         auto des = makeFieldDeserializer(document);
         return make_optional_ptr<AddSmartContract>()
-            | des.String(&AddSmartContract::code, "code") | toCommand;
+            | des.String(&AddSmartContract::code, "code")
+            | des.String(&AddSmartContract::callee, "callee") | toCommand;
       }
 
       // CreateAccount

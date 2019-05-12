@@ -28,6 +28,6 @@ TEST_F(AddSmartContract, Basic) {
       .skipProposal()
       .skipBlock()
       .sendTxAwait(
-          complete(baseTx().addSmartContract("JustNonEmptyString")),
+          complete(baseTx().addSmartContract("JustNonEmptyString", "Callee")),
           [](auto &block) { ASSERT_EQ(block->transactions().size(), 1); });
 }

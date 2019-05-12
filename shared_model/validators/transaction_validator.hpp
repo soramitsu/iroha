@@ -91,8 +91,9 @@ namespace shared_model {
         ReasonsGroupType reason;
         addInvalidCommand(reason, "AddSmartContract");
 
-         // TODO(IvanTyulyandin): next function only checks code size
+         // TODO(IvanTyulyandin): next functions only check size
         validator_.validateCode(reason, asc.code());
+        validator_.validateCallee(reason, asc.callee());
         return reason;
       }
 

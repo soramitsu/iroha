@@ -55,7 +55,8 @@ namespace shared_model {
        * @return pointer to the created command
        */
       FactoryResult<MockAddSmartContract> constructAddSmartContract(
-          const types::SmartContractCodeType &code) const;
+          const types::SmartContractCodeType &code,
+          const types::AccountIdType &callee) const;
 
       /**
        * Construct a mocked AppendRole

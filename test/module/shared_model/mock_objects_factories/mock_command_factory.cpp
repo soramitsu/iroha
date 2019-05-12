@@ -73,11 +73,15 @@ namespace shared_model {
 
     MockCommandFactory::FactoryResult<MockAddSmartContract>
     MockCommandFactory::constructAddSmartContract(
-        const types::SmartContractCodeType &code) const {
+        const types::SmartContractCodeType &code,
+        const types::AccountIdType &callee) const {
       return createFactoryResult<MockAddSmartContract>(
-          [&code](FactoryResult<MockAddSmartContract> specific_cmd_mock) {
+          [&code, &callee]
+          (FactoryResult<MockAddSmartContract> specific_cmd_mock) {
             ON_CALL(*specific_cmd_mock, code())
                 .WillByDefault(ReturnRefOfCopy(code));
+            ON_CALL(*specific_cmd_mock, callee())
+                .WillByDefault(ReturnRefOfCopy(callee));
             return specific_cmd_mock;
           });
     }

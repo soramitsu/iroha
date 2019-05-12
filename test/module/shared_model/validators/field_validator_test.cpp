@@ -139,6 +139,11 @@ class FieldValidatorTest : public ValidatorsTest {
                                           &FieldValidatorTest::code,
                                           {}));
 
+    field_validators.insert(makeValidator("callee",
+                                          &FieldValidator::validateCallee,
+                                          &FieldValidatorTest::callee,
+                                          {}));
+
     // TODO: add validation to all fields
     for (const auto &field : {"value",
                               "signature",

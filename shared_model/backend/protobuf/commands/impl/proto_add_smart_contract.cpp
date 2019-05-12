@@ -22,6 +22,10 @@ namespace shared_model {
       return add_smart_contract_.code();
     }
 
+    const interface::types::AccountIdType &AddSmartContract::callee() const {
+      return add_smart_contract_.callee();
+    }
+
   }  // namespace proto
 }  // namespace shared_model
 

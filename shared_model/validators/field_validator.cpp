@@ -110,6 +110,19 @@ namespace shared_model {
         }
     }
 
+    void FieldValidator::validateCallee(
+        ReasonsGroupType &reason,
+        const interface::types::AccountIdType &callee) const {
+        // TODO(IvanTyulyandin): add callee validator
+        // this is mock for tests to be passed
+        if (callee.empty()) {
+          auto message =
+              boost::format("Smart contract callee should be specified")
+                  .str();
+          reason.second.push_back(std::move(message));
+        }
+    }
+
     void FieldValidator::validatePeer(ReasonsGroupType &reason,
                                       const interface::Peer &peer) const {
       validatePeerAddress(reason, peer.address());

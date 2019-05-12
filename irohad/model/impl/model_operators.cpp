@@ -126,7 +126,8 @@ namespace iroha {
       if (! instanceof <AddSmartContract>(command))
         return false;
       auto add_smart_contract = static_cast<const AddSmartContract &>(command);
-      return add_smart_contract.code == code;
+      return add_smart_contract.code == code
+          && add_smart_contract.callee == callee;
     }
 
 

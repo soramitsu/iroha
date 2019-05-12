@@ -1,12 +1,12 @@
 #ifndef IROHA_ADD_SMART_CONTRACT_HPP
 #define IROHA_ADD_SMART_CONTRACT_HPP
 
- #include "model/command.hpp"
+#include "model/command.hpp"
 
- namespace iroha {
+namespace iroha {
   namespace model {
 
-     /**
+    /**
      * Add smart contract to transaction
      */
     struct AddSmartContract : public Command {
@@ -15,15 +15,26 @@
        */
       std::string code;
 
-       bool operator==(const Command &command) const override;
+     /**
+       * Account of the callee.
+       * Account of the caller is store
+       * inside transaction metadata.
+       */
+      std::string callee;
 
-       AddSmartContract() = default;
+      bool operator==(const Command &command) const override;
 
-       /**
+      AddSmartContract() = default;
+
+      /**
        * @param code_of_smart_contract — smart contract code
        */
-      AddSmartContract(const std::string &code_of_smart_contract)
-          : code(code_of_smart_contract){}
+      AddSmartContract(
+        const std::string &code_of_smart_contract,
+        const std::string &callee_account
+      ) : code(code_of_smart_contract),
+          callee(callee_account)
+      {}
     };
   }  // namespace model
 }  // namespace iroha

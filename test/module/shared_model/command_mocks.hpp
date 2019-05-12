@@ -61,6 +61,7 @@ namespace shared_model {
 
     struct MockAddSmartContract : public shared_model::interface::AddSmartContract {
       MOCK_CONST_METHOD0(code, const types::SmartContractCodeType &());
+      MOCK_CONST_METHOD0(callee, const types::AccountIdType &());
       MOCK_CONST_METHOD0(clone, MockAddSmartContract *());
     };
 
