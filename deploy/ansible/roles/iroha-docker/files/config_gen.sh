@@ -1,5 +1,4 @@
 #!/bin/bash
-set -e
 
 FORCE_OVERWRITE=0
 OUT_DIR='config'
@@ -43,24 +42,25 @@ function usage {
     echo "  -h | --help              : This message"
 }
 
-if ! TEMP=$(getopt -o fp:o:: --long force-overwrite,peers:,out-dir:: -- "$@"); then
-  usage
-  exit 1
-fi
-eval set -- "$TEMP"
+#if ! TEMP=$(getopt -o fp:o:: --long force-overwrite,peers:,out-dir:: -- "$@"); then
+#  usage
+#  exit 1
+#fi
+#eval set -- "$TEMP"
 
 # extract options and their arguments into variables.
-while true ; do
-    case "$1" in
-      -h|--help) usage ; shift ;;
-      -f|--force-overwrite) FORCE_OVERWRITE=1 ; shift ;;
-      -p|--peers) PEERS="$2" ; shift 2 ;;
-      -o|--out-dir)
-        case "$2" in
-            "") OUT_DIR='config' ; shift 2 ;;
-            *) OUT_DIR="$2" ; shift 2 ;;
+while getopts 'hfp:o:' c
+do
+    case $c in
+      h|-help) usage ;;
+      f|-force-overwrite) FORCE_OVERWRITE=1 ;;
+      p|-peers) PEERS="$OPTARG"  ;;
+      o|-out-dir)
+        case "$c" in
+            "") OUT_DIR='config' ;;
+            *) OUT_DIR="$OPTARG" ;;
         esac ;;
-      --) shift ; break ;;
+      -) shift ; break ;;
       *) echo "Unknown argument" ; exit 1 ;;
     esac
 done

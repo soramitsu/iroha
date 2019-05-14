@@ -1,0 +1,16 @@
+---
+#  - name: Export logs
+#    shell:  "docker ps  --format {{ '{{.Names}}' }} --filter publish=10001 | xargs -I % sh -c 'docker logs % > /tmp/iroha-log-%.log'"
+
+- debug: msg=hello
+
+- name: Copy logs
+  copy:
+    src: "{{ item }}"
+    dest: /tmp/iroha-logs/
+  with_fileglob: "/tmp/iroha-log*"
+
+- find: paths="/tmp/" recurse=no patterns="iroha-log*"
+  register: files_to_copy
+- fetch: src={{ item.path }} dest=/tmp/iroha-logs/
+  with_items: "{{ files_to_copy.files }}"

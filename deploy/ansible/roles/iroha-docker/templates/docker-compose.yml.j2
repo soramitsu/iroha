@@ -28,6 +28,8 @@ services:
       - {{ iroha_network_name }}
       - iroha-db-net
     restart: always
+    mem_limit: 5g
+
 
   {{ node.human_hostname }}-postgres:
     image: postgres:{{ iroha_postgres_docker_tag }}
@@ -44,6 +46,8 @@ services:
 {% if iroha_postgres_max_prepared_transactions is defined %}
     command: -c max_prepared_transactions={{ iroha_postgres_max_prepared_transactions }}
 {% endif %}
+    mem_limit: 5g
+
 
 {% endfor %}
 

@@ -1,8 +1,8 @@
 # How many Iroha peers (containers) are deployed on each host. Can be set on a per-host level.
 # Minimum total nodes is 4 (3f+1) in order for consensus to work properly.
 #
-# Default: 4
-iroha_replicas: 4
+# Default: 6
+iroha_replicas: 1
 
 # Whether to use custom hostname for EACH container.
 # If set to `true`, Iroha peers will communicate using these hostnames. Hostnames should be set using
@@ -39,7 +39,7 @@ iroha_network_gateway: '10.10.111.1'
 
 # The role is incompatible with Iroha versions below RC2 since keys format has changed.
 # Apply the patch (files/old-keys-format.patch) if you need support for previous Iroha versions.
-iroha_docker_tag: 1.0.0_rc5
+iroha_docker_tag: 1.0.0
 iroha_postgres_docker_tag: '9.5'
 
 ## The block of variables that toggles certain tasks of the role
@@ -78,7 +78,7 @@ iroha_postgres_max_prepared_transactions: 100
 # Rest of the options affect Iroha configuration
 # See https://iroha.readthedocs.io/en/latest/guides/configuration.html#configuration
 # for more info.
-iroha_max_proposal_size: 10
+iroha_max_proposal_size: 1000
 iroha_proposal_delay: 5000
 iroha_vote_delay: 5000
 iroha_mst_enable: 'false'
@@ -88,6 +88,6 @@ iroha_postgres_host: iroha-postgres
 iroha_postgres_port: 5432
 iroha_blockstore_path: /tmp/block_store
 #iroha_mst_expiration_time: 1440
-#iroha_max_rounds_delay: 3000
-#iroha_stale_stream_max_rounds: 2
+iroha_max_rounds_delay: 500
+iroha_stale_stream_max_rounds: 2000
 

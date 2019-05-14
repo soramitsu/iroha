@@ -8,15 +8,24 @@ services:
       INFLUXDB_UDP_ENABLED: "true"
       INFLUXDB_UDP_BIND_ADDRESS: ":4444"
       INFLUXDB_UDP_DATABASE: "influxdb"
-    volumes:
-      - influxdb_data:/var/lib/influxdb
+
+    networks:
+      - global
+
   grafana:
     image: grafana/grafana
     ports:
       - "3000:3000"
     volumes:
       - grafana_data:/var/lib/grafana
+    networks:
+      - global
 
 volumes:
   influxdb_data: {}
   grafana_data: {}
+
+networks:
+  global:
+    external:
+      name: global

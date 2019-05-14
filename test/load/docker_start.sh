@@ -22,4 +22,4 @@ fi
 echo "Starting Locust..."
 echo "$ locust ${LOCUST_OPTS}"
 
-locust ${LOCUST_OPTS}
+locust --loglevel=DEBUG ${LOCUST_OPTS}
