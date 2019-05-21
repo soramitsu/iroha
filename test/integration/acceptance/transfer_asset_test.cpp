@@ -18,6 +18,8 @@ using namespace integration_framework;
 using namespace shared_model;
 using namespace common_constants;
 
+const size_t kMaxPageSize = -1ll;  // overflow
+
 class TransferAsset : public AcceptanceFixture {
  public:
   /**
@@ -402,7 +404,7 @@ TEST_F(TransferAsset, BigPrecision) {
   auto make_query = [this](std::string account_id) {
     return baseQry()
         .creatorAccountId(kAdminId)
-        .getAccountAssets(account_id)
+        .getAccountAssets(account_id, kMaxPageSize, boost::none)
         .build()
         .signAndAddSignature(kAdminKeypair)
         .finish();
