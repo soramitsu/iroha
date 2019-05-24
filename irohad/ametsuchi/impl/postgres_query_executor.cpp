@@ -17,8 +17,10 @@
 #include <boost/range/irange.hpp>
 
 #include "ametsuchi/impl/soci_utils.hpp"
+#include "common/bind.hpp"
 #include "common/byteutils.hpp"
 #include "cryptography/public_key.hpp"
+#include "interfaces/queries/account_asset_pagination_meta.hpp"
 #include "interfaces/queries/blocks_query.hpp"
 #include "interfaces/queries/get_account.hpp"
 #include "interfaces/queries/get_account_asset_transactions.hpp"
@@ -869,13 +871,40 @@ namespace iroha {
                     std::string>;
       using PermissionTuple = boost::tuple<int>;
 
-      auto cmd = (boost::format(R"(WITH has_perms AS (%s),
-      t AS (
-          SELECT * FROM account_has_asset
-          WHERE account_id = :account_id
+      // get total account assets number
+      size_t total_assets_number;
+
+      sql_ <<
+          R"(select count(1) total_number
+                 from account_has_asset
+                 where account_id = :account_id;)",
+          soci::into(total_assets_number), soci::use(q.accountId());
+
+      // get the assets
+      auto cmd = (boost::format(R"(
+      with has_perms as (%s),
+      t as (
+          select row_number() over () rn, *
+          from (
+              select *
+              from account_has_asset
+              where account_id = :account_id
+              order by asset_id
+          ) t
       )
-      SELECT account_id, asset_id, amount, perm FROM t
-      RIGHT OUTER JOIN has_perms ON TRUE
+      select account_id, asset_id, amount, perm
+          from
+              t
+              right join has_perms on true
+      where rn >= coalesce((
+                  select rn
+                  from t
+                  where coalesce(asset_id = :first_asset_id, true)
+                  limit 1
+              ),
+          1)
+          or rn is null
+      limit :page_size;
       )")
                   % hasQueryPermission(creator_id_,
                                        q.accountId(),
@@ -884,26 +913,49 @@ namespace iroha {
                                        Role::kGetDomainAccAst))
                      .str();
 
+      // These must stay alive while soci query is being done.
+      const auto pagination_meta = q.paginationMeta();
+      const auto first_asset_id =
+          pagination_meta | [](const auto &pagination_meta) {
+            return pagination_meta.firstAssetId();
+          };
+      const size_t page_size = pagination_meta ? pagination_meta->pageSize() + 1
+                                               : total_assets_number;
+
       return executeQuery<QueryTuple, PermissionTuple>(
-          [&] { return (sql_.prepare << cmd, soci::use(q.accountId())); },
+          [&] {
+            return (sql_.prepare << cmd,
+                    soci::use(q.accountId(), "account_id"),
+                    soci::use(first_asset_id, "first_asset_id"),
+                    soci::use(page_size, "page_size"));
+          },
           [&](auto range, auto &) {
             std::vector<
                 std::tuple<shared_model::interface::types::AccountIdType,
                            shared_model::interface::types::AssetIdType,
                            shared_model::interface::Amount>>
                 assets;
-            boost::for_each(range, [&assets](auto t) {
-              apply(t,
+            for (const auto &row : range) {
+              apply(row,
                     [&assets](auto &account_id, auto &asset_id, auto &amount) {
                       assets.push_back(std::make_tuple(
                           std::move(account_id),
                           std::move(asset_id),
                           shared_model::interface::Amount(amount)));
                     });
-            });
-            // TODO mboldyrev 2019.05.17 IR-473 implement pagination
+            }
+            const bool is_last_page = not q.paginationMeta()
+                or (assets.size() <= q.paginationMeta()->pageSize());
+            boost::optional<shared_model::interface::types::AssetIdType>
+                next_asset_id;
+            if (not is_last_page) {
+              next_asset_id = std::get<1>(assets.back());
+              assets.pop_back();
+              assert(not q.paginationMeta()
+                     or (assets.size() == q.paginationMeta()->pageSize()));
+            }
             return query_response_factory_->createAccountAssetResponse(
-                assets, assets.size(), boost::none, query_hash_);
+                assets, total_assets_number, next_asset_id, query_hash_);
           },
           notEnoughPermissionsResponse(perm_converter_,
                                        Role::kGetMyAccAst,
