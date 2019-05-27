@@ -810,10 +810,10 @@ namespace iroha {
       void SetUp() override {
         QueryExecutorTest::SetUp();
         detail =
-            "{\"id@domain\": {\"key\": \"value\", "
-            "\"key2\": \"value2\"},"
-            " \"id2@domain\": {\"key\": \"value\", "
-            "\"key2\": \"value2\"}}";
+            "{ \"id2@domain\" : { \"key\" : \"value\", "
+            "\"key2\" : \"value2\" }, "
+            "\"id@domain\" : { \"key\" : \"value\", "
+            "\"key2\" : \"value2\" } }";
         createDefaultAccount();
         createDefaultAsset();
 
@@ -844,15 +844,17 @@ namespace iroha {
      * @then Return account detail
      */
     TEST_F(GetAccountDetailExecutorTest, ValidMyAccount) {
-      addPerms({shared_model::interface::permissions::Role::kGetMyAccDetail});
+      addPerms({shared_model::interface::permissions::Role::kGetMyAccDetail},
+               account_id2);
       auto query = TestQueryBuilder()
-                       .creatorAccountId(account_id)
-                       .getAccountDetail(999, account_id)
+                       .creatorAccountId(account_id2)
+                       .getAccountDetail(999, account_id2)
                        .build();
       auto result = executeQuery(query);
       checkSuccessfulResult<shared_model::interface::AccountDetailResponse>(
-          std::move(result),
-          [](const auto &cast_resp) { ASSERT_EQ(cast_resp.detail(), "{}"); });
+          std::move(result), [this](const auto &cast_resp) {
+            ASSERT_EQ(cast_resp.detail(), this->detail);
+          });
     }
 
     /**
@@ -942,8 +944,8 @@ namespace iroha {
       checkSuccessfulResult<shared_model::interface::AccountDetailResponse>(
           std::move(result), [](const auto &cast_resp) {
             ASSERT_EQ(cast_resp.detail(),
-                      R"({ "id@domain" : {"key" : "value"}, )"
-                      R"("id2@domain" : {"key" : "value"} })");
+                      R"({ "id2@domain" : { "key" : "value" }, )"
+                      R"("id@domain" : { "key" : "value" } })");
           });
     }
 
@@ -962,8 +964,9 @@ namespace iroha {
       auto result = executeQuery(query);
       checkSuccessfulResult<shared_model::interface::AccountDetailResponse>(
           std::move(result), [](const auto &cast_resp) {
-            ASSERT_EQ(cast_resp.detail(),
-                      R"({"id@domain" : {"key": "value", "key2": "value2"}})");
+            ASSERT_EQ(
+                cast_resp.detail(),
+                R"({ "id@domain" : { "key" : "value", "key2" : "value2" } })");
           });
     }
 
@@ -985,7 +988,7 @@ namespace iroha {
       checkSuccessfulResult<shared_model::interface::AccountDetailResponse>(
           std::move(result), [](const auto &cast_resp) {
             ASSERT_EQ(cast_resp.detail(),
-                      R"({"id@domain" : {"key" : "value"}})");
+                      R"({ "id@domain" : { "key" : "value" } })");
           });
     }
 

@@ -985,36 +985,30 @@ namespace iroha {
       using QueryTuple = QueryType<shared_model::interface::types::DetailType>;
       using PermissionTuple = boost::tuple<int>;
 
-      std::string query_detail;
-      if (q.key() and q.writer()) {
-        auto filled_json = (boost::format("{\"%s\", \"%s\"}") % q.writer().get()
-                            % q.key().get());
-        query_detail = (boost::format(R"(SELECT json_build_object('%s'::text,
-            json_build_object('%s'::text, (SELECT data #>> '%s'
-            FROM account WHERE account_id = :account_id))) AS json)")
-                        % q.writer().get() % q.key().get() % filled_json)
-                           .str();
-      } else if (q.key() and not q.writer()) {
-        query_detail =
-            (boost::format(
-                 R"(SELECT json_object_agg(key, value) AS json FROM (SELECT
-            json_build_object(kv.key, json_build_object('%1%'::text,
-            kv.value -> '%1%')) FROM jsonb_each((SELECT data FROM account
-            WHERE account_id = :account_id)) kv WHERE kv.value ? '%1%') AS
-            jsons, json_each(json_build_object))")
-             % q.key().get())
-                .str();
-      } else if (not q.key() and q.writer()) {
-        query_detail = (boost::format(R"(SELECT json_build_object('%1%'::text,
-          (SELECT data -> '%1%' FROM account WHERE account_id =
-           :account_id)) AS json)")
-                        % q.writer().get())
-                           .str();
-      } else {
-        query_detail = (boost::format(R"(SELECT data#>>'{}' AS json FROM account
-            WHERE account_id = :account_id)"))
-                           .str();
-      }
+      std::string query_detail = R"(
+        with t as (select
+                row_number() over () rn,
+                data_by_writer.key writer,
+                plain_data.key as key,
+                plain_data.value as value
+            from
+                jsonb_each((
+                    select data
+                    from account
+                    where account_id = :account_id
+                )) data_by_writer,
+            jsonb_each(data_by_writer.value) plain_data
+            where
+                coalesce(data_by_writer.key = :writer, true) and
+                coalesce(plain_data.key = :key, true)
+            order by data_by_writer.key asc, plain_data.key asc
+        )
+        select json_object_agg(writer, data_by_writer) json
+            from (
+                select writer, json_object_agg(key, value) data_by_writer
+                from t group by writer
+            ) t1
+        )";
       auto cmd = (boost::format(R"(WITH has_perms AS (%s),
       detail AS (%s)
       SELECT json, perm FROM detail
@@ -1028,10 +1022,14 @@ namespace iroha {
                   % query_detail)
                      .str();
 
+      const auto writer = q.writer();
+      const auto key = q.key();
       return executeQuery<QueryTuple, PermissionTuple>(
           [&] {
             return (sql_.prepare << cmd,
-                    soci::use(q.accountId(), "account_id"));
+                    soci::use(q.accountId(), "account_id"),
+                    soci::use(writer, "writer"),
+                    soci::use(key, "key"));
           },
           [this, &q](auto range, auto &) {
             if (range.empty()) {
