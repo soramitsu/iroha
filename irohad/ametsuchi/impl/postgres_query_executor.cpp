@@ -982,65 +982,150 @@ namespace iroha {
 
     QueryExecutorResult PostgresQueryExecutorVisitor::operator()(
         const shared_model::interface::GetAccountDetail &q) {
-      using QueryTuple = QueryType<shared_model::interface::types::DetailType>;
+      using QueryTuple =
+          QueryType<shared_model::interface::types::DetailType,
+                    uint32_t,
+                    shared_model::interface::types::AccountIdType,
+                    shared_model::interface::types::AccountDetailKeyType>;
       using PermissionTuple = boost::tuple<int>;
 
-      std::string query_detail = R"(
-        with t as (select
-                row_number() over () rn,
-                data_by_writer.key writer,
-                plain_data.key as key,
-                plain_data.value as value
-            from
-                jsonb_each((
-                    select data
-                    from account
-                    where account_id = :account_id
-                )) data_by_writer,
-            jsonb_each(data_by_writer.value) plain_data
-            where
-                coalesce(data_by_writer.key = :writer, true) and
-                coalesce(plain_data.key = :key, true)
-            order by data_by_writer.key asc, plain_data.key asc
-        )
-        select json_object_agg(writer, data_by_writer) json
-            from (
-                select writer, json_object_agg(key, value) data_by_writer
-                from t group by writer
-            ) t1
-        )";
-      auto cmd = (boost::format(R"(WITH has_perms AS (%s),
-      detail AS (%s)
-      SELECT json, perm FROM detail
-      RIGHT OUTER JOIN has_perms ON TRUE
+      auto cmd = (boost::format(R"(
+      with has_perms as (%s),
+      detail AS (
+          with filtered_plain_data as (
+              select row_number() over () rn, *
+              from (
+                  select
+                      data_by_writer.key writer,
+                      plain_data.key as key,
+                      plain_data.value as value
+                  from
+                      jsonb_each((
+                          select data
+                          from account
+                          where account_id = :account_id
+                      )) data_by_writer,
+                  jsonb_each(data_by_writer.value) plain_data
+                  where
+                      coalesce(data_by_writer.key = :writer, true) and
+                      coalesce(plain_data.key = :key, true)
+                  order by data_by_writer.key asc, plain_data.key asc
+              ) t
+          ),
+          page_limits as (
+              select start.rn as start, start.rn + :page_size as end
+                  from (
+                      select rn
+                      from filtered_plain_data
+                      where
+                          coalesce(writer = :first_record_writer, true) and
+                          coalesce(key = :first_record_key, true)
+                      limit 1
+                  ) start
+          ),
+          total_number as (select count(1) total_number from filtered_plain_data),
+          next_record as (
+              select
+                  nullif(writer, :writer) as writer,
+                  nullif(key, :key) as key
+              from
+                  filtered_plain_data,
+                  page_limits
+              where rn = page_limits.end
+          ),
+          page as (
+              select json_object_agg(writer, data_by_writer) json
+              from (
+                  select writer, json_object_agg(key, value) data_by_writer
+                  from
+                      filtered_plain_data,
+                      page_limits
+                  where
+                      rn >= page_limits.start and
+                      rn < page_limits.end
+                  group by writer
+              ) t
+          )
+          select
+              page.json json,
+              total_number,
+              next_record.writer next_writer,
+              next_record.key next_key
+          from
+              page
+              left join total_number on true
+              left join next_record on true
+      )
+      select detail.*, perm from detail
+      right join has_perms on true
       )")
                   % hasQueryPermission(creator_id_,
                                        q.accountId(),
                                        Role::kGetMyAccDetail,
                                        Role::kGetAllAccDetail,
-                                       Role::kGetDomainAccDetail)
-                  % query_detail)
+                                       Role::kGetDomainAccDetail))
                      .str();
 
       const auto writer = q.writer();
       const auto key = q.key();
+      boost::optional<std::string> first_record_writer;
+      boost::optional<std::string> first_record_key;
+      size_t page_size = 999;  // default value, used when pagination
+                               // metadata is not set.
+      // TODO 2019.05.29 mboldyrev IR-516 remove when pagination is made
+      // mandatory
+      q.paginationMeta() | [&](const auto &pagination_meta) {
+        page_size = pagination_meta.pageSize();
+        pagination_meta.firstRecordId() | [&](const auto &first_record_id) {
+          first_record_writer = first_record_id.writer();
+          first_record_key = first_record_id.key();
+        };
+      };
+
       return executeQuery<QueryTuple, PermissionTuple>(
           [&] {
             return (sql_.prepare << cmd,
                     soci::use(q.accountId(), "account_id"),
                     soci::use(writer, "writer"),
-                    soci::use(key, "key"));
+                    soci::use(key, "key"),
+                    soci::use(first_record_writer, "first_record_writer"),
+                    soci::use(first_record_key, "first_record_key"),
+                    soci::use(page_size, "page_size"));
           },
-          [this, &q](auto range, auto &) {
+          [&, this](auto range, auto &) {
             if (range.empty()) {
               return this->logAndReturnErrorResponse(
                   QueryErrorType::kNoAccountDetail, q.accountId(), 0);
             }
 
-            return apply(range.front(), [this](auto &json) {
-              return query_response_factory_->createAccountDetailResponse(
-                  json, query_hash_);
-            });
+            return apply(
+                range.front(),
+                [&, this](auto &json,
+                          auto &total_number,
+                          auto &next_writer,
+                          auto &next_key) {
+                  if (json) {
+                    BOOST_ASSERT_MSG(total_number, "Mandatory value missing!");
+                    if (not total_number) {
+                      this->log_->error(
+                          "Mandatory total_number value is missing in "
+                          "getAccountDetail query result {}.",
+                          q);
+                    }
+                    return query_response_factory_->createAccountDetailResponse(
+                        json.value(), query_hash_);
+                  }
+                  if (total_number.value_or(0) > 0) {
+                    // the only reason for it is nonexistent first record
+                    assert(first_record_writer or first_record_key);
+                    return this->logAndReturnErrorResponse(
+                        QueryErrorType::kStatefulFailed, q.accountId(), 4);
+                  } else {
+                    // no account details matching query
+                    return this->logAndReturnErrorResponse(
+                        QueryErrorType::kNoAccountDetail, q.accountId(), 0);
+                  }
+                });
           },
           notEnoughPermissionsResponse(perm_converter_,
                                        Role::kGetMyAccDetail,
