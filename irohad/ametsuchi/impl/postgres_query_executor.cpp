@@ -883,7 +883,7 @@ namespace iroha {
       // get the assets
       auto cmd = (boost::format(R"(
       with has_perms as (%s),
-      t as (
+      all_data as (
           select row_number() over () rn, *
           from (
               select *
@@ -891,20 +891,23 @@ namespace iroha {
               where account_id = :account_id
               order by asset_id
           ) t
+      ),
+      page_start as (
+          select rn
+          from all_data
+          where coalesce(asset_id = :first_asset_id, true)
+          limit 1
+      ),
+      page_data as (
+          select * from all_data, page_start
+          where
+              all_data.rn >= page_start.rn and
+              all_data.rn < page_start.rn + :page_size
       )
       select account_id, asset_id, amount, perm
           from
-              t
+              page_data
               right join has_perms on true
-      where rn >= coalesce((
-                  select rn
-                  from t
-                  where coalesce(asset_id = :first_asset_id, true)
-                  limit 1
-              ),
-          1)
-          or rn is null
-      limit :page_size;
       )")
                   % hasQueryPermission(creator_id_,
                                        q.accountId(),
