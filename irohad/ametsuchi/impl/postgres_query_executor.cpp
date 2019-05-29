@@ -947,6 +947,10 @@ namespace iroha {
                           shared_model::interface::Amount(amount)));
                     });
             }
+            if (assets.empty()) {
+              return this->logAndReturnErrorResponse(
+                  QueryErrorType::kNoAccountAssets, q.accountId(), 0);
+            }
             const bool is_last_page = not q.paginationMeta()
                 or (assets.size() <= q.paginationMeta()->pageSize());
             boost::optional<shared_model::interface::types::AssetIdType>
