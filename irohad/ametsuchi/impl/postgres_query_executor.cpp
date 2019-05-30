@@ -949,7 +949,7 @@ namespace iroha {
             }
             if (assets.empty()) {
               return this->logAndReturnErrorResponse(
-                  QueryErrorType::kNoAccountAssets, q.accountId(), 0);
+                  QueryErrorType::kStatefulFailed, q.accountId(), 4);
             }
             const bool is_last_page = not q.paginationMeta()
                 or (assets.size() <= q.paginationMeta()->pageSize());
