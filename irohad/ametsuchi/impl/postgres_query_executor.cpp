@@ -918,14 +918,16 @@ namespace iroha {
                      .str();
 
       // These must stay alive while soci query is being done.
-      const bool pagination_requested{q.paginationMeta()};
-      const boost::optional<std::string> req_first_asset_id =
-          pagination_requested ? q.paginationMeta()->firstAssetId()
-                               : boost::optional<std::string>{};
-      const boost::optional<size_t> req_page_size  // TODO 2019.05.31 mboldyrev make
-                                               // it non-optional after IR-516
-          = pagination_requested ? q.paginationMeta()->pageSize() + 1
-                                 : boost::optional<size_t>{};
+      const auto pagination_meta{q.paginationMeta()};
+      const auto req_first_asset_id =
+          pagination_meta | [](const auto &pagination_meta) {
+            return boost::optional<std::string>(pagination_meta.firstAssetId());
+          };
+      const auto req_page_size =  // TODO 2019.05.31 mboldyrev make it
+                                  // non-optional after IR-516
+          pagination_meta | [](const auto &pagination_meta) {
+            return boost::optional<size_t>(pagination_meta.pageSize());
+          };
 
       return executeQuery<QueryTuple, PermissionTuple>(
           [&] {
