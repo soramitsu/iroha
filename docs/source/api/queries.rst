@@ -478,7 +478,7 @@ Request Structure
 
     "Account ID", "account id to request balance from", "<account_name>@<domain_id>", "makoto@soramitsu"
     AccountAssetPaginationMeta.page_size, "Requested page size. The number of assets in response will not exceed this value. If the response was truncated, the asset id following the last one of response will be provided in next_asset_id.", 0 < page_size < 4294967296, 100
-    AccountAssetPaginationMeta.first_asset_id, requested page start, name#domain, my_asset#my_domain
+    AccountAssetPaginationMeta.first_asset_id, "Requested page start.  If the field is not set, then the first page is returned.", name#domain, my_asset#my_domain
 
 Response Schema
 ---------------
@@ -511,7 +511,7 @@ Response Structure
     total_number, number of assets matching query without page limits, 0 < total_number < 4294967296, 100500
     next_asset_id, the id of asset immediately following curent page, name#domain, my_asset#my_domain
 
-.. note:: If page size is equal or greater than the number of assets matching other requested criteria, the next asset id will be unset in the response. Otherwie it contains the value that clients should use for the first asset id if they want to fetch the next page.
+.. note:: If page size is equal or greater than the number of assets matching other requested criteria, the next asset id will be unset in the response. Otherwise it contains the value that clients should use for the first asset id if they want to fetch the next page.
 
 
 Possible Stateful Validation Errors
