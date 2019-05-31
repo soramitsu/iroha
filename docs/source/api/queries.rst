@@ -477,7 +477,7 @@ Request Structure
     :widths: 15, 30, 20, 15
 
     "Account ID", "account id to request balance from", "<account_name>@<domain_id>", "makoto@soramitsu"
-    AccountAssetPaginationMeta.page_size, requested page size, 0 < page_size < 4294967296, 100
+    AccountAssetPaginationMeta.page_size, "Requested page size. The number of assets in response will not exceed this value. If the response was truncated, the asset id following the last one of response will be provided in next_asset_id.", 0 < page_size < 4294967296, 100
     AccountAssetPaginationMeta.first_asset_id, requested page start, name#domain, my_asset#my_domain
 
 Response Schema
@@ -511,6 +511,8 @@ Response Structure
     total_number, number of assets matching query without page limits, 0 < total_number < 4294967296, 100500
     next_asset_id, the id of asset immediately following curent page, name#domain, my_asset#my_domain
 
+.. note:: If page size is equal or greater than the number of assets matching other requested criteria, the next asset id will be unset in the response. Otherwie it contains the value that clients should use for the first asset id if they want to fetch the next page.
+
 
 Possible Stateful Validation Errors
 -----------------------------------
@@ -521,7 +523,7 @@ Possible Stateful Validation Errors
     "1", "Could not get account assets", "Internal error happened", "Try again or contact developers"
     "2", "No such permissions", "Query's creator does not have any of the permissions to get account assets", "Grant the necessary permission: individual, global or domain one"
     "3", "Invalid signatures", "Signatures of this query did not pass validation", "Add more signatures and make sure query's signatures are a subset of account's signatories"
-    "4", "Invalid pagination metadata", "Wrong page size or nonexistent first asset", "Set a valid page size and leave first asset id unspecified"
+    "4", "Invalid pagination metadata", "Wrong page size or nonexistent first asset", "Set a valid page size, and make sure that asset id is valid, or leave first asset id unspecified"
 
 Get Account Detail
 ^^^^^^^^^^^^^^^^^^
