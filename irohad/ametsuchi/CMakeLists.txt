@@ -73,7 +73,13 @@ add_library(ametsuchi
     impl/in_memory_block_storage.cpp
     impl/in_memory_block_storage_factory.cpp
     impl/k_times_reconnection_strategy.cpp
+    vmCall.h
     )
+
+# TODO (IvanTyulyandin): library should be visible in tests
+# now there is mock to pass tests
+add_library(vmCall SHARED IMPORTED GLOBAL)
+set_property(TARGET vmCall PROPERTY IMPORTED_LOCATION "/opt/iroha/irohad/ametsuchi/vmCall.so")
 
 target_link_libraries(ametsuchi
     pg_connection_init
@@ -90,6 +96,7 @@ target_link_libraries(ametsuchi
     failover_callback
     SOCI::postgresql
     SOCI::core
+    vmCall
     )
 
 target_compile_definitions(ametsuchi

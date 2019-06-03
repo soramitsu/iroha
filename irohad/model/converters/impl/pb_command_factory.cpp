@@ -233,16 +233,20 @@ namespace iroha {
       protocol::AddSmartContract PbCommandFactory::serializeAddSmartContract(
           const model::AddSmartContract &add_smart_contract) {
         protocol::AddSmartContract pb_add_smart_contract;
-        pb_add_smart_contract.set_code(add_smart_contract.code);
+        pb_add_smart_contract.set_caller(add_smart_contract.caller);
         pb_add_smart_contract.set_callee(add_smart_contract.callee);
+        pb_add_smart_contract.set_code(add_smart_contract.code);
+        pb_add_smart_contract.set_input(add_smart_contract.input);
         return pb_add_smart_contract;
       }
 
        model::AddSmartContract PbCommandFactory::deserializeAddSmartContract(
           const protocol::AddSmartContract &pb_add_smart_contract) {
         model::AddSmartContract add_smart_contract;
-        add_smart_contract.code = pb_add_smart_contract.code();
+        add_smart_contract.caller = pb_add_smart_contract.caller();
         add_smart_contract.callee = pb_add_smart_contract.callee();
+        add_smart_contract.code = pb_add_smart_contract.code();
+        add_smart_contract.input = pb_add_smart_contract.input();
         return add_smart_contract;
       }
 

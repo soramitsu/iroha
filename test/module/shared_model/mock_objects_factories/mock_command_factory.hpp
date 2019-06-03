@@ -51,12 +51,17 @@ namespace shared_model {
 
       /**
        * Construct a mocked AddSmartContract
+       * @param caller to be in that command
+       * @param callee to be in that command
        * @param code to be in that command
+       * @param input to be in that command
        * @return pointer to the created command
        */
       FactoryResult<MockAddSmartContract> constructAddSmartContract(
-          const types::SmartContractCodeType &code,
-          const types::AccountIdType &callee) const;
+        const types::AccountIdType &caller,
+        const types::AccountIdType &callee,
+        const types::SmartContractCodeType &code,
+        const types::SmartContractCodeType &input) const;
 
       /**
        * Construct a mocked AppendRole

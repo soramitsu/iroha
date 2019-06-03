@@ -87,13 +87,14 @@ namespace shared_model {
       }
 
       ReasonsGroupType operator()(const interface::AddSmartContract &asc) const {
-        // TODO(IvanTyulyandin): it is mock
         ReasonsGroupType reason;
         addInvalidCommand(reason, "AddSmartContract");
 
-         // TODO(IvanTyulyandin): next functions only check size
-        validator_.validateCode(reason, asc.code());
+         // TODO(IvanTyulyandin): these functions are mocks
+        validator_.validateCaller(reason, asc.caller());
         validator_.validateCallee(reason, asc.callee());
+        validator_.validateCode(reason, asc.code());
+        validator_.validateInput(reason, asc.input());
         return reason;
       }
 

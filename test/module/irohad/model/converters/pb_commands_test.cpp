@@ -108,7 +108,7 @@ TEST(CommandTest, add_signatory_abstract_factory) {
 
 TEST(CommandTest, add_smart_contract) {
   auto factory = iroha::model::converters::PbCommandFactory();
-  auto orig_command = AddSmartContract("CppForever", "ZeroAddress");
+  auto orig_command = AddSmartContract("CppForever", "ZeroAddress", "caFe", "BaBE");
   auto proto_command = factory.serializeAddSmartContract(orig_command);
   auto serial_command = factory.deserializeAddSmartContract(proto_command);
   ASSERT_EQ(orig_command, serial_command);

@@ -6,14 +6,19 @@ namespace shared_model {
     std::string AddSmartContract::toString() const {
       return detail::PrettyStringBuilder()
           .init("AddSmartContract")
-          .append("code", code())
+          .append("caller", caller())
           .append("callee", callee())
+          .append("code", code())
+          .append("input", input())
           .finalize();
     }
 
     bool AddSmartContract::operator==(const ModelType &rhs) const {
-      return code() == rhs.code()
-        && callee() == rhs.callee();
+      return caller() == rhs.caller()
+          && callee() == rhs.callee()
+          && code() == rhs.code()
+          && input() == rhs.input();
+;
     }
 
   }  // namespace interface

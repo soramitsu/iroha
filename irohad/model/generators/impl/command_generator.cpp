@@ -38,8 +38,11 @@ namespace iroha {
       }
 
       std::shared_ptr<Command> CommandGenerator::generateAddSmartContract(
-          const std::string &code, const std::string &callee) {
-        return generateCommand<AddSmartContract>(code, callee);
+            const std::string &caller,
+            const std::string &callee,
+            const std::string &code,
+            const std::string &input) {
+        return generateCommand<AddSmartContract>(caller, callee, code, input);
       }
 
       std::shared_ptr<Command> CommandGenerator::generateRemoveSignatory(

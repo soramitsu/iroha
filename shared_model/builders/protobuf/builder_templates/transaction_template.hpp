@@ -193,25 +193,25 @@ namespace shared_model {
         return removeSignatoryRaw(account_id, public_key.hex());
       }
 
-<<<<<<< HEAD
-      auto addSmartContract(const interface::types::SmartContractCodeType &code)
-          const {
-        return addSmartContractRaw(code);
-=======
       auto addSmartContract(
+          const interface::types::AccountIdType &caller,
+          const interface::types::AccountIdType &callee,
           const interface::types::SmartContractCodeType &code,
-          const interface::types::AccountIdType &callee) const {
-        return addSmartContractRaw(code, callee);
->>>>>>> Add field callee to AddSmartContract
+          const interface::types::SmartContractCodeType &input) const {
+        return addSmartContractRaw(caller, callee, code, input);
       }
 
       auto addSmartContractRaw(
+          const interface::types::AccountIdType &caller,
+          const interface::types::AccountIdType &callee,
           const interface::types::SmartContractCodeType &code,
-          const interface::types::AccountIdType &callee) const {
+          const interface::types::SmartContractCodeType &input) const {
         return addCommand([&](auto proto_command) {
           auto command = proto_command->mutable_add_smart_contract();
-          command->set_code(code);
+          command->set_caller(caller);
           command->set_callee(callee);
+          command->set_code(code);
+          command->set_input(input);
         });
       }
 

@@ -19,9 +19,13 @@ namespace shared_model {
 
       AddSmartContract(AddSmartContract &&o) noexcept;
 
-      const interface::types::SmartContractCodeType &code() const override;
+      const interface::types::AccountIdType &caller() const override;
 
       const interface::types::AccountIdType &callee() const override;
+
+      const interface::types::SmartContractCodeType &code() const override;
+
+      const interface::types::SmartContractCodeType &input() const override;
 
     private:
       const iroha::protocol::AddSmartContract &add_smart_contract_;

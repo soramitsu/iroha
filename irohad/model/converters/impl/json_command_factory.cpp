@@ -191,18 +191,23 @@ namespace iroha {
 
         document.SetObject();
         document.AddMember("command_type", "AddSmartContract", allocator);
-        document.AddMember("code", add_smart_contract->code, allocator);
+        document.AddMember("caller", add_smart_contract->caller, allocator);
         document.AddMember("callee", add_smart_contract->callee, allocator);
+        document.AddMember("code", add_smart_contract->code, allocator);
+        document.AddMember("input", add_smart_contract->input, allocator);
 
-         return document;
+        return document;
       }
 
        optional_ptr<Command> JsonCommandFactory::deserializeAddSmartContract(
           const Value &document) {
         auto des = makeFieldDeserializer(document);
         return make_optional_ptr<AddSmartContract>()
+            | des.String(&AddSmartContract::caller, "caller")
+            | des.String(&AddSmartContract::callee, "callee")
             | des.String(&AddSmartContract::code, "code")
-            | des.String(&AddSmartContract::callee, "callee") | toCommand;
+            | des.String(&AddSmartContract::input, "input")
+            | toCommand;
       }
 
       // CreateAccount

@@ -27,7 +27,10 @@ namespace iroha {
             const std::string &account_id, const pubkey_t &key);
 
         std::shared_ptr<Command> generateAddSmartContract(
-            const std::string &code, const std::string &callee);
+            const std::string &caller,
+            const std::string &callee,
+            const std::string &code,
+            const std::string &input);
 
         std::shared_ptr<Command> generateRemoveSignatory(
             const std::string &account_id, const pubkey_t &key);

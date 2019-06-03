@@ -106,8 +106,10 @@ TEST(ModelOperatorTest, AddSignatoryTest) {
 
 AddSmartContract createAddSmartContract() {
   AddSmartContract add_smart_contract;
-  add_smart_contract.code = "MeGoCode";
+  add_smart_contract.caller = "SomeAddr";
   add_smart_contract.callee = "SomeAddr";
+  add_smart_contract.code = "C0De";
+  add_smart_contract.input = "";
   return add_smart_contract;
 }
 
@@ -116,9 +118,9 @@ TEST(ModelOperatorTest, AddSmartContract) {
   auto second = createAddSmartContract();
 
   ASSERT_EQ(first, second);
-  second.code = "NotMeGoCode";
+  second.code = "111C0de";
   ASSERT_NE(first, second);
-  second.code = "MeGoCode";
+  second.code = first.code;
   second.callee = "NotSomeAddr";
   ASSERT_NE(first, second);
 }

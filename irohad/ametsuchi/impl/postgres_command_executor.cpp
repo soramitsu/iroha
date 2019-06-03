@@ -33,6 +33,9 @@
 #include "interfaces/permission_to_string.hpp"
 #include "utils/string_builder.hpp"
 
+#include "ametsuchi/vmCall.h"
+#include <iostream>
+
 namespace {
   struct PreparedStatement {
     std::string command_name;
@@ -985,7 +988,27 @@ namespace iroha {
 
     CommandResult PostgresCommandExecutor::operator()(
         const shared_model::interface::AddSmartContract &command) {
-    // TODO(IvanTyulyandin): It is mock
+      // need to use const cast to call vm
+      // inside VmCall this strings are not modified
+      char* caller = const_cast<char*>(command.caller().c_str());
+      char* callee = const_cast<char*>(command.callee().c_str());
+      char* code = const_cast<char*>(command.code().c_str());
+      char* input = const_cast<char*>(command.input().c_str());
+      VmCall_return res = VmCall(code, input, caller, callee);
+      if (res.r1 == 0) {
+        // TODO(IvanTyulyandin): need to set appropriate error value, 5 used to pass compilation
+        return makeCommandError("ADD SMART CONTRACT FAILED", 5, [](){return "ADD SMART CONTRACT";});
+      }
+
+    // TODO(IvanTyulyandin): return vm output after call
+/*
+      char input2[] = "ee919d500000000000000000000000000000000000000000000000000000000000000001";
+      char code2[] = "";
+      res = VmCall(code2, input2, caller, callee);
+      if (res.r1 == 0) {
+        return makeCommandError("ADD SMART CONTRACT FAILED 2", 5, [](){return "ADD SMART CONTRACT 2";});
+      }
+*/
       return {};
     }
 
