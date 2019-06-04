@@ -1,16 +1,10 @@
 # How to run test for add_smart_contract
 Docker container should be runned as sudo.
-How to set golang environment, download Hyperledger Burrow sources and build .so from it:
+To set golang environment, download Hyperledger Burrow sources and build .so from it run following:
 1) source scripts/envForBurrowVM.sh
 2) ./scripts/buildVmCaller.sh
 
-mkdir build 
-cd build
-(build Iroha into this directory)
-cd ..
-
-To run test add_smart_contract:
-./scripts/SC.sh
+Then run all test, or add_smart_contract_test in the appropriate directory
 
 
 # Welcome!

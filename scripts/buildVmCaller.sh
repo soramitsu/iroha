@@ -10,6 +10,6 @@ go get github.com/hyperledger/burrow/execution/evm \
 
 # build vmCall.so and vmCall.h
 cd $GOPATH/src/vmCaller
-go build -o vmCall.so -buildmode=c-shared main.go
-cp $GOPATH/src/vmCaller/vmCall.so /opt/iroha/irohad/ametsuchi/
+go build -o vmCall.a -buildmode=c-archive main.go
+cp $GOPATH/src/vmCaller/vmCall.a /opt/iroha/irohad/ametsuchi/
 cp $GOPATH/src/vmCaller/vmCall.h /opt/iroha/irohad/ametsuchi/

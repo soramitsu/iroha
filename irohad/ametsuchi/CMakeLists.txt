@@ -76,10 +76,8 @@ add_library(ametsuchi
     vmCall.h
     )
 
-# TODO (IvanTyulyandin): library should be visible in tests
-# now there is mock to pass tests
-add_library(vmCall SHARED IMPORTED GLOBAL)
-set_property(TARGET vmCall PROPERTY IMPORTED_LOCATION "/opt/iroha/irohad/ametsuchi/vmCall.so")
+add_library(vmCall STATIC IMPORTED GLOBAL)
+set_property(TARGET vmCall PROPERTY IMPORTED_LOCATION "${PROJECT_SOURCE_DIR}/irohad/ametsuchi/vmCall.a")
 
 target_link_libraries(ametsuchi
     pg_connection_init
