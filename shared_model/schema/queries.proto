@@ -54,6 +54,13 @@ message GetAccountAssets {
   AssetPaginationMeta pagination_meta = 2;
 }
 
+message AccountDetailPaginationMeta {
+  uint32 page_size = 1;
+  oneof opt_first_record_id {
+    AccountDetailRecordId first_record_id = 2;
+  }
+}
+
 message GetAccountDetail {
   oneof opt_account_id{
     string account_id = 1;
@@ -64,6 +71,7 @@ message GetAccountDetail {
   oneof opt_writer{
     string writer = 3;
   }
+  AccountDetailPaginationMeta pagination_meta = 4;
 }
 
 message GetAssetInfo {

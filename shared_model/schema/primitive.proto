@@ -96,3 +96,12 @@ message Peer {
   string address = 1;
   string peer_key = 2; // hex string
 }
+
+message AccountDetailRecordId {
+  oneof opt_writer{
+    string writer = 1;
+  }
+  oneof opt_key{
+    string key = 2;
+  }
+}

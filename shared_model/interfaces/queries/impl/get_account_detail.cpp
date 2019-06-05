@@ -14,6 +14,8 @@ namespace shared_model {
           .append("account_id", accountId())
           .append("key", key() ? *key() : "")
           .append("writer", writer() ? *writer() : "")
+          .append("pagination_meta",
+                  paginationMeta() ? paginationMeta()->toString() : "(not set)")
           .finalize();
     }
 

@@ -162,6 +162,6 @@ shared_model::proto::Query GrantablePermissionsFixture::queryAccountDetail(
     const shared_model::interface::types::AccountNameType &account_name,
     const shared_model::crypto::Keypair &account_key) {
   const auto account_id = account_name + "@" + kDomain;
-  return complete(baseQry(account_id).getAccountDetail(account_id),
+  return complete(baseQry(account_id).getAccountDetail(999, account_id),
                   account_key);
 }
