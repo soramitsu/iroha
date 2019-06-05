@@ -1087,12 +1087,12 @@ namespace iroha {
                                 size_t page_size) {
         checkSuccessfulResult<shared_model::interface::AccountDetailResponse>(
             response, [&, this](const auto &response) {
-              return validatePageResponse(response,
-                                          std::move(writer),
-                                          std::move(key),
-                                          std::move(first_record_writer),
-                                          std::move(first_record_key),
-                                          page_size);
+              return this->validatePageResponse(response,
+                                                std::move(writer),
+                                                std::move(key),
+                                                std::move(first_record_writer),
+                                                std::move(first_record_key),
+                                                page_size);
             });
       }
 
@@ -1365,13 +1365,14 @@ namespace iroha {
           size_t page_size) {
         checkSuccessfulResult<shared_model::interface::AccountDetailResponse>(
             response, [&, this](const auto &response) {
-              return GetAccountDetailPagedExecutorTest::validatePageResponse(
-                  response,
-                  requestedWriter(),
-                  requestedKey(),
-                  first_record_writer,
-                  first_record_key,
-                  page_size);
+              return this
+                  ->GetAccountDetailPagedExecutorTest::validatePageResponse(
+                      response,
+                      this->requestedWriter(),
+                      this->requestedKey(),
+                      first_record_writer,
+                      first_record_key,
+                      page_size);
             });
       }
 
