@@ -11,6 +11,10 @@
 #include <sstream>
 #include <type_traits>
 
+#define RAPIDJSON_HAS_STDSTRING 1
+
+#include <rapidjson/document.h>
+#include <rapidjson/rapidjson.h>
 #include <boost/format.hpp>
 #include <boost/range/adaptor/transformed.hpp>
 #include <boost/range/size.hpp>
@@ -993,6 +997,425 @@ namespace iroha {
                       R"({ "id@domain" : { "key" : "value" } })");
           });
     }
+
+    class GetAccountDetailPagedExecutorTest : public QueryExecutorTest {
+     public:
+      std::map<std::string, std::map<std::string, std::string>> added_data_;
+
+      void SetUp() override {
+        QueryExecutorTest::SetUp();
+        addPerms({shared_model::interface::permissions::Role::kGetMyAccDetail});
+      }
+
+      std::string makeAccountName(size_t i) const {
+        return (boost::format("account_%02d") % i).str();
+      }
+
+      shared_model::interface::types::AssetIdType makeAccountId(
+          size_t i) const {
+        return makeAccountName(i) + "@" + domain_id;
+      }
+
+      std::string makeKey(size_t i) const {
+        return (boost::format("key_%02d") % i).str();
+      }
+
+      std::string makeValue(size_t writer, size_t key) const {
+        return (boost::format("value_w%02d_k%02d") % writer % key).str();
+      }
+
+      /**
+       * Add details to account_id.
+       * @param num_accounts are created and each adds
+       * @param num_keys_per_account detail pieces to account_id.
+       */
+      void addDetails(const size_t num_accounts,
+                      const size_t num_keys_per_account) {
+        for (size_t acc = 0; acc < num_accounts; ++acc) {
+          execute(*mock_command_factory->constructCreateAccount(
+                      makeAccountName(acc), domain_id, *pubkey2),
+                  true);
+          execute(*mock_command_factory->constructGrantPermission(
+                      makeAccountId(acc),
+                      shared_model::interface::permissions::Grantable::
+                          kSetMyAccountDetail),
+                  true);
+          auto &added_writer = added_data_[makeAccountId(acc)];
+          for (size_t key = 0; key < num_keys_per_account; ++key) {
+            execute(*mock_command_factory->constructSetAccountDetail(
+                        account_id, makeKey(key), makeValue(acc, key)),
+                    true,
+                    makeAccountId(acc));
+            added_writer[makeKey(key)] = makeValue(acc, key);
+          }
+        }
+      }
+
+      /**
+       * Query account details.
+       */
+      QueryExecutorResult queryPage(
+          boost::optional<std::string> writer,
+          boost::optional<std::string> key,
+          boost::optional<std::string> first_record_writer,
+          boost::optional<std::string> first_record_key,
+          size_t page_size) {
+        auto query = TestQueryBuilder()
+                         .creatorAccountId(account_id)
+                         .getAccountDetail(page_size,
+                                           account_id,
+                                           key.value_or(""),
+                                           writer.value_or(""),
+                                           first_record_writer,
+                                           first_record_key)
+                         .build();
+        return executeQuery(query);
+      }
+
+      /**
+       * Check the page response.
+       * @param response the response of GetAccountAssets query
+       * @param page_start requested first asset (according to the order of
+       *        addition)
+       * @param page_size requested page size
+       */
+      void validatePageResponse(const QueryExecutorResult &response,
+          boost::optional<std::string> writer,
+          boost::optional<std::string> key,
+          boost::optional<std::string> first_record_writer,
+          boost::optional<std::string> first_record_key,
+                                size_t page_size) {
+        checkSuccessfulResult<shared_model::interface::AccountDetailResponse>(
+            response, [&, this](const auto &response) {
+              return validatePageResponse(response,
+                                          std::move(writer),
+                                          std::move(key),
+                                          std::move(first_record_writer),
+                                          std::move(first_record_key),
+                                          page_size);
+            });
+      }
+
+      void validatePageResponse(
+          const shared_model::interface::AccountDetailResponse &response,
+          boost::optional<std::string> req_writer,
+          boost::optional<std::string> req_key,
+          boost::optional<std::string> first_record_writer,
+          boost::optional<std::string> first_record_key,
+          size_t page_size) {
+        auto optional_match = [](const auto &opt, const auto &val) {
+          return not opt or opt.value() == val;
+        };
+
+        std::map<std::string, std::map<std::string, std::string>> expected_data;
+
+        struct RecordId {
+          std::string writer;
+          std::string key;
+        };
+
+        size_t expected_total_number = 0;
+        size_t expected_page_size = 0;
+        boost::optional<RecordId> next_record;
+        bool page_started = false;
+        bool page_ended = false;
+        for (const auto &added_writer_and_data : this->added_data_) {
+          const auto &writer = added_writer_and_data.first;
+          const auto &added_data_by_writer = added_writer_and_data.second;
+
+          // check if writer matches query
+          if (optional_match(req_writer, writer)) {
+            for (const auto &key_and_value : added_data_by_writer) {
+              const auto &key = key_and_value.first;
+              const auto &val = key_and_value.second;
+
+              // check if key matches query
+              if (optional_match(req_key, key)) {
+                ++expected_total_number;
+                page_started = page_started
+                    or (optional_match(first_record_writer, writer)
+                        and optional_match(first_record_key, key));
+                if (page_started) {
+                  if (page_ended) {
+                    if (not next_record) {
+                      next_record = RecordId{writer, key};
+                    }
+                  } else {
+                    expected_data[writer][key] = val;
+                    ++expected_page_size;
+                    page_ended |= expected_page_size >= page_size;
+                  }
+                }
+              }
+            }
+          }
+        }
+
+        // check nextRecordId
+        EXPECT_EQ(response.totalNumber(), expected_total_number);
+        if (next_record) {
+          if (not response.nextRecordId()) {
+            ADD_FAILURE() << "nextRecordId not set!";
+          } else {
+            if (not req_writer) {
+              if (not response.nextRecordId()->writer()) {
+                ADD_FAILURE() << "nextRecordId->writer not set!";
+              } else {
+                EXPECT_EQ(response.nextRecordId()->writer().value(),
+                          next_record->writer);
+              }
+            }
+            if (not req_key) {
+              if (not response.nextRecordId()->key()) {
+                ADD_FAILURE() << "nextRecordId->key not set!";
+              } else {
+                EXPECT_EQ(response.nextRecordId()->key().value(),
+                          next_record->key);
+              }
+            }
+          }
+        } else {
+          EXPECT_FALSE(response.nextRecordId());
+        }
+
+        this->checkJsonData(response.detail(), expected_data);
+      }
+
+      /**
+       * Check JSON data of paged response.
+       */
+      void checkJsonData(
+          const std::string &test_data,
+          const std::map<std::string, std::map<std::string, std::string>>
+              &reference_data) {
+        rapidjson::Document doc;
+        if (doc.Parse(test_data).HasParseError()) {
+          ADD_FAILURE() << "Malformed JSON!";
+          return;
+        }
+        if (not doc.IsObject()) {
+          ADD_FAILURE() << "JSON top entity must be an object!";
+          return;
+        }
+        const auto top_obj = doc.GetObject();
+
+        EXPECT_EQ(top_obj.MemberEnd() - top_obj.MemberBegin(),
+                  reference_data.size())
+            << "Wrong number of writers!";
+
+        for (const auto &ref_writer_and_data : reference_data) {
+          const auto &ref_writer = ref_writer_and_data.first;
+          const auto &ref_data_by_writer = ref_writer_and_data.second;
+
+          // get the writer in JSON
+          const auto json_writer_it = top_obj.FindMember(ref_writer);
+          if (json_writer_it == top_obj.MemberEnd()) {
+            ADD_FAILURE() << ref_writer << " not present in JSON!";
+            continue;
+          }
+          const rapidjson::Value &json_data_by_writer = json_writer_it->value;
+          if (not json_data_by_writer.IsObject()) {
+            ADD_FAILURE() << "JSON entity for writer " << ref_writer
+                          << " must be an object!";
+            continue;
+          }
+          const auto json_data_by_writer_obj = json_data_by_writer.GetObject();
+
+          EXPECT_EQ(json_data_by_writer_obj.MemberEnd()
+                        - json_data_by_writer_obj.MemberBegin(),
+                    ref_data_by_writer.size())
+              << "Wrong number of keys!";
+
+          // check the values
+          for (const auto &key_and_value : ref_data_by_writer) {
+            const auto &ref_key = key_and_value.first;
+            const auto &ref_val = key_and_value.second;
+
+            const auto it = json_data_by_writer_obj.FindMember(ref_key);
+            if (it == top_obj.MemberEnd()) {
+              ADD_FAILURE() << ref_key << " for writer " << ref_writer
+                            << " not present in JSON!";
+            } else {
+              const rapidjson::Value &data_by_key = it->value;
+              if (not data_by_key.IsString()) {
+                ADD_FAILURE() << "JSON entity for writer " << ref_writer
+                              << ", key " << ref_key << " must be a string!";
+              } else {
+                EXPECT_EQ(data_by_key.GetString(), ref_val);
+              }
+            }
+          }
+        }
+      }
+
+      /**
+       * Query account details and validate the response.
+       */
+      template <typename... Args>
+      auto queryPageAndValidateResponse(Args... args)
+          -> decltype(queryPage(std::declval<Args>()...)) {
+        auto response = queryPage(args...);
+        validatePageResponse(response, args...);
+        return response;
+      }
+    };
+
+    TEST_F(GetAccountDetailPagedExecutorTest, NoPageMetaData) {
+      addDetails(3, 3);
+
+      shared_model::proto::Query query{[] {
+        iroha::protocol::Query query;
+
+        // set creator account
+        query.mutable_payload()->mutable_meta()->set_creator_account_id(
+            account_id);
+
+        // make a getAccountDetail query
+        query.mutable_payload()->mutable_get_account_detail()->set_account_id(
+            account_id);
+
+        return shared_model::proto::Query{query};
+      }()};
+
+      // send the query
+      QueryExecutorResult response = executeQuery(query);
+
+      // validate result
+      validatePageResponse(
+          response, boost::none, boost::none, boost::none, boost::none, 3 * 3);
+    }
+
+    TEST_F(GetAccountDetailPagedExecutorTest, NonExistentFirstRecord) {
+      addDetails(1, 1);
+      checkStatefulError<shared_model::interface::StatefulFailedErrorResponse>(
+          queryPage(boost::none, boost::none, makeAccountId(2), boost::none, 2),
+          kInvalidPagination);
+    }
+
+    enum class GetAccountDetailPagedExecutorTestVariant {
+      kAllDetails,
+      kDetailsByWriter,
+      kDetailsByKey,
+      kSingleDetail,
+    };
+
+    class GetAccountDetailPagedExecutorTestParametric
+        : public GetAccountDetailPagedExecutorTest,
+          public ::testing::WithParamInterface<
+              GetAccountDetailPagedExecutorTestVariant> {
+     public:
+
+      boost::optional<std::string> requestedWriter() const {
+        if (GetParam()
+                == GetAccountDetailPagedExecutorTestVariant::kDetailsByWriter
+            or GetParam()
+                == GetAccountDetailPagedExecutorTestVariant::kSingleDetail) {
+          return makeAccountId(0);
+        }
+        return boost::none;
+      }
+
+      boost::optional<std::string> requestedKey() const {
+        if (GetParam()
+                == GetAccountDetailPagedExecutorTestVariant::kDetailsByKey
+            or GetParam()
+                == GetAccountDetailPagedExecutorTestVariant::kSingleDetail) {
+          return makeKey(0);
+        }
+        return boost::none;
+      }
+
+      bool recordIdMustHaveWriter() const {
+        return not requestedWriter();
+      }
+
+      bool recordIdMustHaveKey() const {
+        return not requestedKey();
+      }
+
+      boost::optional<std::string> makeFirstRecordWriterIfNeeded(size_t i) {
+        if (recordIdMustHaveWriter()) {
+          return makeAccountId(i);
+        }
+        return boost::none;
+      }
+
+      boost::optional<std::string> makeFirstRecordKeyIfNeeded(size_t i) {
+        if (recordIdMustHaveKey()) {
+          return makeKey(i);
+        }
+        return boost::none;
+      }
+
+      QueryExecutorResult queryPage(
+          boost::optional<std::string> first_record_writer,
+          boost::optional<std::string> first_record_key,
+          size_t page_size) {
+        return GetAccountDetailPagedExecutorTest::queryPage(requestedWriter(),
+                                                            requestedKey(),
+                                                            first_record_writer,
+                                                            first_record_key,
+                                                            page_size);
+      }
+
+      void validatePageResponse(
+          const QueryExecutorResult &response,
+          boost::optional<std::string> first_record_writer,
+          boost::optional<std::string> first_record_key,
+          size_t page_size) {
+        checkSuccessfulResult<shared_model::interface::AccountDetailResponse>(
+            response, [&, this](const auto &response) {
+              return GetAccountDetailPagedExecutorTest::validatePageResponse(
+                  response,
+                  requestedWriter(),
+                  requestedKey(),
+                  first_record_writer,
+                  first_record_key,
+                  page_size);
+            });
+      }
+
+      template <typename... Args>
+      auto queryPageAndValidateResponse(Args... args)
+          -> decltype(queryPage(std::declval<Args>()...)) {
+        auto response = queryPage(args...);
+        validatePageResponse(response, args...);
+        return response;
+      }
+    };
+
+    TEST_P(GetAccountDetailPagedExecutorTestParametric, FirstPage) {
+      addDetails(3, 3);
+      queryPageAndValidateResponse(boost::none, boost::none, 2);
+    }
+
+    TEST_P(GetAccountDetailPagedExecutorTestParametric,
+           MiddlePageAcrossWriters) {
+      addDetails(4, 2);
+      queryPageAndValidateResponse(
+          makeFirstRecordWriterIfNeeded(1), makeFirstRecordKeyIfNeeded(1), 3);
+    }
+
+    TEST_P(GetAccountDetailPagedExecutorTestParametric, MiddlePageAcrossKeys) {
+      addDetails(2, 4);
+      queryPageAndValidateResponse(
+          makeFirstRecordWriterIfNeeded(1), makeFirstRecordKeyIfNeeded(1), 2);
+    }
+
+    TEST_P(GetAccountDetailPagedExecutorTestParametric, LastPage) {
+      addDetails(3, 3);
+      queryPageAndValidateResponse(
+          makeFirstRecordWriterIfNeeded(2), makeFirstRecordKeyIfNeeded(2), 2);
+    }
+
+    INSTANTIATE_TEST_CASE_P(
+        AllVariants,
+        GetAccountDetailPagedExecutorTestParametric,
+        ::testing::Values(
+            GetAccountDetailPagedExecutorTestVariant::kAllDetails,
+            GetAccountDetailPagedExecutorTestVariant::kDetailsByWriter,
+            GetAccountDetailPagedExecutorTestVariant::kDetailsByKey,
+            GetAccountDetailPagedExecutorTestVariant::kSingleDetail), );
 
     class GetBlockExecutorTest : public QueryExecutorTest {
      public:
