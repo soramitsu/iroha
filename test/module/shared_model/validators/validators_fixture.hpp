@@ -235,6 +235,7 @@ class ValidatorsTest : public ::testing::Test {
     peer.set_peer_key(public_key);
     tx_pagination_meta.set_page_size(10);
     assets_pagination_meta.set_page_size(10);
+    account_detail_pagination_meta.set_page_size(10);
   }
 
   size_t public_key_size{0};
