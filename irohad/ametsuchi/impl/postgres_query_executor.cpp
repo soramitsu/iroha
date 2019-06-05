@@ -224,12 +224,8 @@ namespace iroha {
               }
               auto query_range = range
                   | boost::adaptors::transformed([](auto &t) {
-                                   return rebind(viewQuery<QueryTuple>(t));
-                                 })
-                  | boost::adaptors::filtered([](const auto &t) {
-                                   return static_cast<bool>(t);
-                                 })
-                  | boost::adaptors::transformed([](auto t) { return *t; });
+                                   return viewQuery<QueryTuple>(t);
+                                 });
               return std::forward<ResponseCreator>(response_creator)(
                   query_range, perms...);
             });
@@ -237,6 +233,15 @@ namespace iroha {
         return this->logAndReturnErrorResponse(
             QueryErrorType::kStatefulFailed, e.what(), 1);
       }
+    }
+
+    template<typename T>
+    auto ResultWithoutNulls(T range) {
+      return range
+          | boost::adaptors::transformed([](auto &&t) { return rebind(t); })
+          | boost::adaptors::filtered(
+                 [](const auto &t) { return static_cast<bool>(t); })
+          | boost::adaptors::transformed([](auto t) { return *t; });
     }
 
     template <class Q>
@@ -468,14 +473,15 @@ namespace iroha {
       return executeQuery<QueryTuple, PermissionTuple>(
           applier(query),
           [&](auto range, auto &) {
+            auto range_without_nulls = ResultWithoutNulls(std::move(range));
             uint64_t total_size = 0;
-            if (not boost::empty(range)) {
-              total_size = boost::get<2>(*range.begin());
+            if (not boost::empty(range_without_nulls)) {
+              total_size = boost::get<2>(*range_without_nulls.begin());
             }
             std::map<uint64_t, std::vector<uint64_t>> index;
             // unpack results to get map from block height to index of tx in
             // a block
-            boost::for_each(range, [&index](auto t) {
+            boost::for_each(range_without_nulls, [&index](auto t) {
               apply(t, [&index](auto &height, auto &idx, auto &) {
                 index[height].push_back(idx);
               });
@@ -581,12 +587,13 @@ namespace iroha {
                     soci::use(q.accountId(), "target_account_id"));
           },
           [this, &q, &query_apply](auto range, auto &) {
-            if (range.empty()) {
+            auto range_without_nulls = ResultWithoutNulls(std::move(range));
+            if (range_without_nulls.empty()) {
               return this->logAndReturnErrorResponse(
                   QueryErrorType::kNoAccount, q.accountId(), 0);
             }
 
-            return apply(range.front(), query_apply);
+            return apply(range_without_nulls.front(), query_apply);
           },
           notEnoughPermissionsResponse(perm_converter_,
                                        Role::kGetMyAccount,
@@ -667,14 +674,15 @@ namespace iroha {
       return executeQuery<QueryTuple, PermissionTuple>(
           [&] { return (sql_.prepare << cmd, soci::use(q.accountId())); },
           [this, &q](auto range, auto &) {
-            if (range.empty()) {
+            auto range_without_nulls = ResultWithoutNulls(std::move(range));
+            if (range_without_nulls.empty()) {
               return this->logAndReturnErrorResponse(
                   QueryErrorType::kNoSignatories, q.accountId(), 0);
             }
 
             auto pubkeys = boost::copy_range<
                 std::vector<shared_model::interface::types::PubkeyType>>(
-                range | boost::adaptors::transformed([](auto t) {
+                range_without_nulls | boost::adaptors::transformed([](auto t) {
                   return apply(t, [&](auto &public_key) {
                     return shared_model::interface::types::PubkeyType{
                         shared_model::crypto::Blob::fromHexString(public_key)};
@@ -767,7 +775,9 @@ namespace iroha {
             return (sql_.prepare << cmd, soci::use(creator_id_, "account_id"));
           },
           [&](auto range, auto &my_perm, auto &all_perm) {
-            if (boost::size(range) != q.transactionHashes().size()) {
+            auto range_without_nulls = ResultWithoutNulls(std::move(range));
+            if (boost::size(range_without_nulls)
+                != q.transactionHashes().size()) {
               // TODO [IR-1816] Akvinikym 03.12.18: replace magic number 4
               // with a named constant
               // at least one of the hashes in the query was invalid -
@@ -778,7 +788,7 @@ namespace iroha {
                   4);
             }
             std::map<uint64_t, std::unordered_set<std::string>> index;
-            boost::for_each(range, [&index](auto t) {
+            boost::for_each(range_without_nulls, [&index](auto t) {
               apply(t, [&index](auto &height, auto &hash) {
                 index[height].insert(hash);
               });
@@ -937,13 +947,14 @@ namespace iroha {
                     soci::use(req_page_size, "page_size"));
           },
           [&](auto range, auto &) {
+            auto range_without_nulls = ResultWithoutNulls(std::move(range));
             std::vector<
                 std::tuple<shared_model::interface::types::AccountIdType,
                            shared_model::interface::types::AssetIdType,
                            shared_model::interface::Amount>>
                 assets;
             size_t total_number = 0;
-            for (const auto &row : range) {
+            for (const auto &row : range_without_nulls) {
               apply(row,
                     [&assets, &total_number](auto &account_id,
                                              auto &asset_id,
@@ -1151,9 +1162,10 @@ namespace iroha {
                     soci::use(creator_id_, "role_account_id"));
           },
           [&](auto range, auto &) {
+            auto range_without_nulls = ResultWithoutNulls(std::move(range));
             auto roles = boost::copy_range<
                 std::vector<shared_model::interface::types::RoleIdType>>(
-                range | boost::adaptors::transformed([](auto t) {
+                range_without_nulls | boost::adaptors::transformed([](auto t) {
                   return apply(t, [](auto &role_id) { return role_id; });
                 }));
 
@@ -1184,14 +1196,15 @@ namespace iroha {
                     soci::use(q.roleId(), "role_name"));
           },
           [this, &q](auto range, auto &) {
-            if (range.empty()) {
+            auto range_without_nulls = ResultWithoutNulls(std::move(range));
+            if (range_without_nulls.empty()) {
               return this->logAndReturnErrorResponse(
                   QueryErrorType::kNoRoles,
                   "{" + q.roleId() + ", " + creator_id_ + "}",
                   0);
             }
 
-            return apply(range.front(), [this](auto &permission) {
+            return apply(range_without_nulls.front(), [this](auto &permission) {
               return query_response_factory_->createRolePermissionsResponse(
                   shared_model::interface::RolePermissionSet(permission),
                   query_hash_);
@@ -1222,14 +1235,15 @@ namespace iroha {
                     soci::use(q.assetId(), "asset_id"));
           },
           [this, &q](auto range, auto &) {
-            if (range.empty()) {
+            auto range_without_nulls = ResultWithoutNulls(std::move(range));
+            if (range_without_nulls.empty()) {
               return this->logAndReturnErrorResponse(
                   QueryErrorType::kNoAsset,
                   "{" + q.assetId() + ", " + creator_id_ + "}",
                   0);
             }
 
-            return apply(range.front(),
+            return apply(range_without_nulls.front(),
                          [this, &q](auto &domain_id, auto &precision) {
                            return query_response_factory_->createAssetResponse(
                                q.assetId(), domain_id, precision, query_hash_);
