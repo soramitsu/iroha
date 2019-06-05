@@ -24,6 +24,11 @@ namespace shared_model {
 
       std::unique_ptr<interface::QueryResponse> createAccountDetailResponse(
           interface::types::DetailType account_detail,
+          size_t total_number,
+          boost::optional<shared_model::interface::types::AccountIdType>
+              next_writer,
+          boost::optional<shared_model::interface::types::AccountDetailKeyType>
+              next_key,
           const crypto::Hash &query_hash) const override;
 
       std::unique_ptr<interface::QueryResponse> createAccountResponse(

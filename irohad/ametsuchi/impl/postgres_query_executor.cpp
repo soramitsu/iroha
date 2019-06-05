@@ -1124,7 +1124,11 @@ namespace iroha {
                           q);
                     }
                     return query_response_factory_->createAccountDetailResponse(
-                        json.value(), query_hash_);
+                        json.value(),
+                        total_number.value_or(0),
+                        next_writer,
+                        next_key,
+                        query_hash_);
                   }
                   if (total_number.value_or(0) > 0) {
                     // the only reason for it is nonexistent first record

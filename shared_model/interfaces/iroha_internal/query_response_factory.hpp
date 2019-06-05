@@ -12,6 +12,7 @@
 #include "interfaces/common_objects/account.hpp"
 #include "interfaces/common_objects/asset.hpp"
 #include "interfaces/permissions.hpp"
+#include "interfaces/queries/account_detail_record_id.hpp"
 #include "interfaces/query_responses/block_query_response.hpp"
 #include "interfaces/query_responses/error_query_response.hpp"
 #include "interfaces/query_responses/query_response.hpp"
@@ -58,11 +59,16 @@ namespace shared_model {
       /**
        * Create response for account detail query
        * @param account_detail to be inserted into the response
+       * @param next_writer the next record writer, if any
+       * @param next_key the next record key, if any
        * @param query_hash - hash of the query, for which response is created
        * @return account detail response
        */
       virtual std::unique_ptr<QueryResponse> createAccountDetailResponse(
           types::DetailType account_detail,
+          size_t total_number,
+          boost::optional<types::AccountIdType> next_writer,
+          boost::optional<types::AccountDetailKeyType> next_key,
           const crypto::Hash &query_hash) const = 0;
 
       /**
