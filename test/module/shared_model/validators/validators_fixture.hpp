@@ -106,6 +106,11 @@ class ValidatorsTest : public ::testing::Test {
          [&](auto refl, auto msg, auto field) {
            refl->MutableMessage(msg, field)->CopyFrom(assets_pagination_meta);
          }},
+        {"iroha.protocol.GetAccountDetail.pagination_meta",
+         [&](auto refl, auto msg, auto field) {
+           refl->MutableMessage(msg, field)
+               ->CopyFrom(account_detail_pagination_meta);
+         }},
         {"iroha.protocol.GetBlock.height", setUInt64(height)}};
   }
 
@@ -230,6 +235,7 @@ class ValidatorsTest : public ::testing::Test {
     peer.set_peer_key(public_key);
     tx_pagination_meta.set_page_size(10);
     assets_pagination_meta.set_page_size(10);
+    account_detail_pagination_meta.set_page_size(10);
   }
 
   size_t public_key_size{0};
@@ -265,6 +271,7 @@ class ValidatorsTest : public ::testing::Test {
   iroha::protocol::QueryPayloadMeta meta;
   iroha::protocol::TxPaginationMeta tx_pagination_meta;
   iroha::protocol::AssetPaginationMeta assets_pagination_meta;
+  iroha::protocol::AccountDetailPaginationMeta account_detail_pagination_meta;
 
   // List all used fields in commands
   std::unordered_map<

@@ -847,7 +847,7 @@ namespace iroha {
       addPerms({shared_model::interface::permissions::Role::kGetMyAccDetail});
       auto query = TestQueryBuilder()
                        .creatorAccountId(account_id)
-                       .getAccountDetail(account_id)
+                       .getAccountDetail(kMaxPageSize, account_id)
                        .build();
       auto result = executeQuery(query);
       checkSuccessfulResult<shared_model::interface::AccountDetailResponse>(
@@ -864,7 +864,7 @@ namespace iroha {
       addPerms({shared_model::interface::permissions::Role::kGetAllAccDetail});
       auto query = TestQueryBuilder()
                        .creatorAccountId(account_id)
-                       .getAccountDetail(account_id2)
+                       .getAccountDetail(kMaxPageSize, account_id2)
                        .build();
       auto result = executeQuery(query);
       checkSuccessfulResult<shared_model::interface::AccountDetailResponse>(
@@ -883,7 +883,7 @@ namespace iroha {
           {shared_model::interface::permissions::Role::kGetDomainAccDetail});
       auto query = TestQueryBuilder()
                        .creatorAccountId(account_id)
-                       .getAccountDetail(account_id2)
+                       .getAccountDetail(kMaxPageSize, account_id2)
                        .build();
       auto result = executeQuery(query);
       checkSuccessfulResult<shared_model::interface::AccountDetailResponse>(
@@ -902,7 +902,7 @@ namespace iroha {
           {shared_model::interface::permissions::Role::kGetDomainAccDetail});
       auto query = TestQueryBuilder()
                        .creatorAccountId(account_id)
-                       .getAccountDetail(another_account_id)
+                       .getAccountDetail(kMaxPageSize, another_account_id)
                        .build();
       auto result = executeQuery(query);
       checkStatefulError<shared_model::interface::StatefulFailedErrorResponse>(
@@ -918,7 +918,7 @@ namespace iroha {
       addPerms({shared_model::interface::permissions::Role::kGetAllAccDetail});
       auto query = TestQueryBuilder()
                        .creatorAccountId(account_id)
-                       .getAccountDetail("some@domain")
+                       .getAccountDetail(kMaxPageSize, "some@domain")
                        .build();
       auto result = executeQuery(query);
       checkStatefulError<shared_model::interface::NoAccountDetailErrorResponse>(
@@ -936,7 +936,7 @@ namespace iroha {
       addPerms({shared_model::interface::permissions::Role::kGetAllAccDetail});
       auto query = TestQueryBuilder()
                        .creatorAccountId(account_id)
-                       .getAccountDetail(account_id2, "key")
+                       .getAccountDetail(kMaxPageSize, account_id2, "key")
                        .build();
       auto result = executeQuery(query);
       checkSuccessfulResult<shared_model::interface::AccountDetailResponse>(
@@ -955,10 +955,11 @@ namespace iroha {
      */
     TEST_F(GetAccountDetailExecutorTest, ValidWriter) {
       addPerms({shared_model::interface::permissions::Role::kGetAllAccDetail});
-      auto query = TestQueryBuilder()
-                       .creatorAccountId(account_id)
-                       .getAccountDetail(account_id2, "", account_id)
-                       .build();
+      auto query =
+          TestQueryBuilder()
+              .creatorAccountId(account_id)
+              .getAccountDetail(kMaxPageSize, account_id2, "", account_id)
+              .build();
       auto result = executeQuery(query);
       checkSuccessfulResult<shared_model::interface::AccountDetailResponse>(
           std::move(result), [](const auto &cast_resp) {
@@ -977,10 +978,11 @@ namespace iroha {
      */
     TEST_F(GetAccountDetailExecutorTest, ValidKeyWriter) {
       addPerms({shared_model::interface::permissions::Role::kGetAllAccDetail});
-      auto query = TestQueryBuilder()
-                       .creatorAccountId(account_id)
-                       .getAccountDetail(account_id2, "key", account_id)
-                       .build();
+      auto query =
+          TestQueryBuilder()
+              .creatorAccountId(account_id)
+              .getAccountDetail(kMaxPageSize, account_id2, "key", account_id)
+              .build();
       auto result = executeQuery(query);
       checkSuccessfulResult<shared_model::interface::AccountDetailResponse>(
           std::move(result), [](const auto &cast_resp) {
