@@ -9,6 +9,7 @@
 #include "backend/protobuf/query_responses/proto_error_query_response.hpp"
 #include "cryptography/crypto_provider/crypto_defaults.hpp"
 #include "cryptography/keypair.hpp"
+#include "framework/common_constants.hpp"
 #include "framework/test_logger.hpp"
 #include "framework/test_subscriber.hpp"
 #include "interfaces/query_responses/block_query_response.hpp"
@@ -89,7 +90,7 @@ class QueryProcessorTest : public ::testing::Test {
 TEST_F(QueryProcessorTest, QueryProcessorWhereInvokeInvalidQuery) {
   auto qry = TestUnsignedQueryBuilder()
                  .creatorAccountId(kAccountId)
-                 .getAccountDetail(999, kAccountId)
+                 .getAccountDetail(kMaxPageSize, kAccountId)
                  .build()
                  .signAndAddSignature(keypair)
                  .finish();
@@ -114,7 +115,7 @@ TEST_F(QueryProcessorTest, QueryProcessorWhereInvokeInvalidQuery) {
 TEST_F(QueryProcessorTest, QueryProcessorWithWrongKey) {
   auto query = TestUnsignedQueryBuilder()
                    .creatorAccountId(kAccountId)
-                   .getAccountDetail(999, kAccountId)
+                   .getAccountDetail(kMaxPageSize, kAccountId)
                    .build()
                    .signAndAddSignature(
                        shared_model::crypto::DefaultCryptoAlgorithmType::

@@ -1053,7 +1053,7 @@ namespace iroha {
                       page_limits
                   where
                       rn >= page_limits.start and
-                      rn < page_limits.end
+                      coalesce(rn < page_limits.end, true)
                   group by writer
               ) t
           )
@@ -1081,8 +1081,7 @@ namespace iroha {
       const auto key = q.key();
       boost::optional<std::string> first_record_writer;
       boost::optional<std::string> first_record_key;
-      size_t page_size = 999;  // default value, used when pagination
-                               // metadata is not set.
+      boost::optional<size_t> page_size;
       // TODO 2019.05.29 mboldyrev IR-516 remove when pagination is made
       // mandatory
       q.paginationMeta() | [&](const auto &pagination_meta) {
