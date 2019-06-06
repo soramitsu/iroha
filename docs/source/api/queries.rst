@@ -587,7 +587,7 @@ Request Schema
 .. note::
     Pay attention, that all fields except pagination meta are optional. Reasons will be described later.
 
-.. note::
+.. warning::
     Pagination metadata can be missing in the request for compatibility reasons, but this behaviour is deprecated and should be avoided.
 
 Request Structure
@@ -641,7 +641,7 @@ Possible Stateful Validation Errors
     "1", "Could not get account detail", "Internal error happened", "Try again or contact developers"
     "2", "No such permissions", "Query's creator does not have any of the permissions to get account detail", "Grant the necessary permission: individual, global or domain one"
     "3", "Invalid signatures", "Signatures of this query did not pass validation", "Add more signatures and make sure query's signatures are a subset of account's signatories"
-    "4", "Invalid pagination metadata", "Wrong page size or nonexistent first record", "Set a valid page size and leave first record id unspecified"
+    "4", "Invalid pagination metadata", "Wrong page size or nonexistent first record", "Set valid page size and leave first record id unspecified"
 
 Usage Examples
 --------------
