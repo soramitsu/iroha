@@ -426,7 +426,7 @@ namespace shared_model {
         const interface::AccountDetailPaginationMeta &pagination_meta) const {
       validatePaginationMetaPageSize(reason, pagination_meta.pageSize());
       pagination_meta.firstRecordId() |
-          [&pagination_meta, &reason, this](const auto &first_record_id) {
+          [&reason, this](const auto &first_record_id) {
             first_record_id.writer() | [&reason, this](const auto &writer) {
               this->validateAccountId(reason, writer);
             };

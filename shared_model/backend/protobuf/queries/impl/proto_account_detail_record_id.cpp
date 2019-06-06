@@ -7,22 +7,11 @@
 
 using namespace shared_model::proto;
 
-template <typename QueryType, typename T>
-AccountDetailRecordId::AccountDetailRecordId(QueryType &&query)
-    : CopyableProto(std::forward<QueryType>(query)) {}
-
-template AccountDetailRecordId::AccountDetailRecordId(
-    AccountDetailRecordId::TransportType &);
-template AccountDetailRecordId::AccountDetailRecordId(
-    const AccountDetailRecordId::TransportType &);
-template AccountDetailRecordId::AccountDetailRecordId(
-    AccountDetailRecordId::TransportType &&);
+AccountDetailRecordId::AccountDetailRecordId(const TransportType &query)
+    : CopyableProto(query) {}
 
 AccountDetailRecordId::AccountDetailRecordId(const AccountDetailRecordId &o)
-    : AccountDetailRecordId(o.proto_) {}
-
-AccountDetailRecordId::AccountDetailRecordId(AccountDetailRecordId &&o) noexcept
-    : AccountDetailRecordId(std::move(o.proto_)) {}
+    : AccountDetailRecordId(*o.proto_) {}
 
 boost::optional<shared_model::interface::types::AccountIdType>
 AccountDetailRecordId::writer() const {
