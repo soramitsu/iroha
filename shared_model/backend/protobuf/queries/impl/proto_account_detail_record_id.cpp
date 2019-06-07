@@ -13,19 +13,12 @@ AccountDetailRecordId::AccountDetailRecordId(const TransportType &query)
 AccountDetailRecordId::AccountDetailRecordId(const AccountDetailRecordId &o)
     : AccountDetailRecordId(*o.proto_) {}
 
-boost::optional<shared_model::interface::types::AccountIdType>
-AccountDetailRecordId::writer() const {
-  if (proto_->opt_writer_case()
-      == TransportType::OptWriterCase::OPT_WRITER_NOT_SET) {
-    return boost::none;
-  }
+shared_model::interface::types::AccountIdType AccountDetailRecordId::writer()
+    const {
   return proto_->writer();
 }
 
-boost::optional<shared_model::interface::types::AccountDetailKeyType>
+shared_model::interface::types::AccountDetailKeyType
 AccountDetailRecordId::key() const {
-  if (proto_->opt_key_case() == TransportType::OptKeyCase::OPT_KEY_NOT_SET) {
-    return boost::none;
-  }
   return proto_->key();
 }

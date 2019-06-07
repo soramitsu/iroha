@@ -427,12 +427,8 @@ namespace shared_model {
       validatePaginationMetaPageSize(reason, pagination_meta.pageSize());
       pagination_meta.firstRecordId() |
           [&reason, this](const auto &first_record_id) {
-            first_record_id.writer() | [&reason, this](const auto &writer) {
-              this->validateAccountId(reason, writer);
-            };
-            first_record_id.key() | [&reason, this](const auto &key) {
-              this->validateAccountDetailKey(reason, key);
-            };
+            this->validateAccountId(reason, first_record_id.writer());
+            this->validateAccountDetailKey(reason, first_record_id.key());
           };
     }
 
