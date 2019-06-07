@@ -847,7 +847,7 @@ namespace iroha {
       addPerms({shared_model::interface::permissions::Role::kGetMyAccDetail});
       auto query = TestQueryBuilder()
                        .creatorAccountId(account_id)
-                       .getAccountDetail(kMaxPageSize, account_id2)
+                       .getAccountDetail(kMaxPageSize, account_id)
                        .build();
       auto result = executeQuery(query);
       checkSuccessfulResult<shared_model::interface::AccountDetailResponse>(
