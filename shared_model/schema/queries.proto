@@ -56,9 +56,7 @@ message GetAccountAssets {
 
 message AccountDetailPaginationMeta {
   uint32 page_size = 1;
-  oneof opt_first_record_id {
-    AccountDetailRecordId first_record_id = 2;
-  }
+  AccountDetailRecordId first_record_id = 2;
 }
 
 message GetAccountDetail {
