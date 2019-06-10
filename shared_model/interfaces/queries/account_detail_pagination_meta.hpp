@@ -14,7 +14,7 @@
 namespace shared_model {
   namespace interface {
 
-    /// Provides query metadata for any transaction list pagination.
+    /// Provides query metadata for account detail list pagination.
     class AccountDetailPaginationMeta
         : public ModelPrimitive<AccountDetailPaginationMeta> {
      public:

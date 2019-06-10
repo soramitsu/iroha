@@ -14,7 +14,7 @@ bool AccountDetailRecordId::operator==(const ModelType &rhs) const {
 std::string AccountDetailRecordId::toString() const {
   return detail::PrettyStringBuilder()
       .init("AccountDetailRecordId")
-      .append("writer", writer().value_or("(none)"))
-      .append("key", key().value_or("(none)"))
+      .append("writer", writer())
+      .append("key", key())
       .finalize();
 }

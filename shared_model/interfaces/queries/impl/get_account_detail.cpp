@@ -21,7 +21,8 @@ namespace shared_model {
 
     bool GetAccountDetail::operator==(const ModelType &rhs) const {
       return accountId() == rhs.accountId() and key() == rhs.key()
-          and writer() == rhs.writer();
+          and writer() == rhs.writer()
+          and paginationMeta() == rhs.paginationMeta();
     }
 
   }  // namespace interface

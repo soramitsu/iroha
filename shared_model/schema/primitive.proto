@@ -98,10 +98,6 @@ message Peer {
 }
 
 message AccountDetailRecordId {
-  oneof opt_writer{
-    string writer = 1;
-  }
-  oneof opt_key{
-    string key = 2;
-  }
+  string writer = 1;
+  string key = 2;
 }

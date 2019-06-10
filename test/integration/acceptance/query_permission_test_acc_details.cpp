@@ -8,6 +8,7 @@
 #include <regex>
 
 #include "interfaces/query_responses/account_detail_response.hpp"
+#include "framework/common_constants.hpp"
 
 using namespace common_constants;
 
@@ -79,6 +80,6 @@ shared_model::proto::Query QueryPermissionAccDetails::makeQuery(
     const interface::types::AccountIdType &spectator,
     const crypto::Keypair &spectator_keypair) {
   return fixture.complete(
-      fixture.baseQry(spectator).getAccountDetail(999, target),
+      fixture.baseQry(spectator).getAccountDetail(kMaxPageSize, target),
       spectator_keypair);
 }

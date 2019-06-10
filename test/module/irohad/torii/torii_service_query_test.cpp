@@ -120,8 +120,9 @@ TEST_F(ToriiQueryServiceTest, FetchBlocksWhenValidQuery) {
   auto proto_block =
       std::make_unique<shared_model::proto::Block>(block.block_v1());
   std::shared_ptr<shared_model::interface::BlockQueryResponse> block_response =
-      shared_model::proto::ProtoQueryResponseFactory().createBlockQueryResponse(
-          std::move(proto_block));
+      shared_model::proto::ProtoQueryResponseFactory(
+          getTestLogger("ProtoQueryResponseFactory"))
+          .createBlockQueryResponse(std::move(proto_block));
 
   EXPECT_CALL(*query_processor,
               blocksQueryHandle(Truly([&blocks_query](auto &query) {
