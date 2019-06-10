@@ -1000,6 +1000,7 @@ namespace iroha {
 
     class GetAccountDetailPagedExecutorTest : public QueryExecutorTest {
      public:
+      // added account details, {writer -> {key -> value}}
       std::map<std::string, std::map<std::string, std::string>> added_data_;
 
       void SetUp() override {
@@ -1011,7 +1012,7 @@ namespace iroha {
         return (boost::format("account_%02d") % i).str();
       }
 
-      shared_model::interface::types::AssetIdType makeAccountId(
+      shared_model::interface::types::AccountIdType makeAccountId(
           size_t i) const {
         return makeAccountName(i) + "@" + domain_id;
       }
@@ -1073,10 +1074,12 @@ namespace iroha {
       }
 
       /**
-       * Check the page response.
-       * @param response the response of GetAccountAssets query
-       * @param page_start requested first asset (according to the order of
-       *        addition)
+       * Exhaustive check of response.
+       * @param response the response of GetAccountDetail query
+       * @param writer requested data writer
+       * @param key requested data key
+       * @param first_record_writer requested first row writer
+       * @param first_record_key requested first row key
        * @param page_size requested page size
        */
       void validatePageResponse(const QueryExecutorResult &response,
@@ -1087,36 +1090,45 @@ namespace iroha {
                                 size_t page_size) {
         checkSuccessfulResult<shared_model::interface::AccountDetailResponse>(
             response, [&, this](const auto &response) {
-              return this->validatePageResponse(response,
-                                                std::move(writer),
-                                                std::move(key),
-                                                std::move(first_record_writer),
-                                                std::move(first_record_key),
-                                                page_size);
+              Response expected_response =
+                  this->getExpectedResponse(writer,
+                                            key,
+                                            first_record_writer,
+                                            first_record_key,
+                                            page_size);
+              this->validatePageResponse(response, expected_response);
             });
       }
 
-      void validatePageResponse(
-          const shared_model::interface::AccountDetailResponse &response,
-          boost::optional<std::string> req_writer,
-          boost::optional<std::string> req_key,
-          boost::optional<std::string> first_record_writer,
-          boost::optional<std::string> first_record_key,
+     protected:
+      struct RecordId {
+        std::string writer;
+        std::string key;
+      };
+
+      struct Response {
+        size_t total_number{0};
+        boost::optional<RecordId> next_record;
+        std::map<std::string, std::map<std::string, std::string>>
+            details;  // account details, {writer -> {key -> value}}
+      };
+
+      /**
+       * @return an internal representation of expected correct response for the
+       * given parameters.
+       */
+      Response getExpectedResponse(
+          const boost::optional<std::string> &req_writer,
+          const boost::optional<std::string> &req_key,
+          const boost::optional<std::string> &first_record_writer,
+          const boost::optional<std::string> &first_record_key,
           size_t page_size) {
         auto optional_match = [](const auto &opt, const auto &val) {
           return not opt or opt.value() == val;
         };
 
-        std::map<std::string, std::map<std::string, std::string>> expected_data;
-
-        struct RecordId {
-          std::string writer;
-          std::string key;
-        };
-
-        size_t expected_total_number = 0;
+        Response expected_response;
         size_t expected_page_size = 0;
-        boost::optional<RecordId> next_record;
         bool page_started = false;
         bool page_ended = false;
         for (const auto &added_writer_and_data : this->added_data_) {
@@ -1131,17 +1143,17 @@ namespace iroha {
 
               // check if key matches query
               if (optional_match(req_key, key)) {
-                ++expected_total_number;
+                ++expected_response.total_number;
                 page_started = page_started
                     or (optional_match(first_record_writer, writer)
                         and optional_match(first_record_key, key));
                 if (page_started) {
                   if (page_ended) {
-                    if (not next_record) {
-                      next_record = RecordId{writer, key};
+                    if (not expected_response.next_record) {
+                      expected_response.next_record = RecordId{writer, key};
                     }
                   } else {
-                    expected_data[writer][key] = val;
+                    expected_response.details[writer][key] = val;
                     ++expected_page_size;
                     page_ended |= expected_page_size >= page_size;
                   }
@@ -1150,35 +1162,28 @@ namespace iroha {
             }
           }
         }
+        return expected_response;
+      }
 
-        // check nextRecordId
-        EXPECT_EQ(response.totalNumber(), expected_total_number);
-        if (next_record) {
+      /**
+       * Compare actual response to the reference one.
+       */
+      void validatePageResponse(
+          const shared_model::interface::AccountDetailResponse &response,
+          const Response &expected_response) {
+        EXPECT_EQ(response.totalNumber(), expected_response.total_number);
+        if (expected_response.next_record) {
           if (not response.nextRecordId()) {
             ADD_FAILURE() << "nextRecordId not set!";
           } else {
-            if (not req_writer) {
-              if (not response.nextRecordId()->writer()) {
-                ADD_FAILURE() << "nextRecordId->writer not set!";
-              } else {
-                EXPECT_EQ(response.nextRecordId()->writer().value(),
-                          next_record->writer);
-              }
-            }
-            if (not req_key) {
-              if (not response.nextRecordId()->key()) {
-                ADD_FAILURE() << "nextRecordId->key not set!";
-              } else {
-                EXPECT_EQ(response.nextRecordId()->key().value(),
-                          next_record->key);
-              }
-            }
+            EXPECT_EQ(response.nextRecordId()->writer(),
+                      expected_response.next_record->writer);
+            EXPECT_EQ(response.nextRecordId()->key(),
+                      expected_response.next_record->key);
           }
         } else {
           EXPECT_FALSE(response.nextRecordId());
         }
-
-        this->checkJsonData(response.detail(), expected_data);
       }
 
       /**
@@ -1299,12 +1304,18 @@ namespace iroha {
       kSingleDetail,
     };
 
+    template <typename T>
+    auto defaultTo(boost::optional<T> default_val) {
+      return [default_val = std::move(default_val)](const T &alternative) {
+        return boost::make_optional(default_val.value_or(alternative));
+      };
+    }
+
     class GetAccountDetailPagedExecutorTestParametric
         : public GetAccountDetailPagedExecutorTest,
           public ::testing::WithParamInterface<
               GetAccountDetailPagedExecutorTestVariant> {
      public:
-
       boost::optional<std::string> requestedWriter() const {
         if (GetParam()
                 == GetAccountDetailPagedExecutorTestVariant::kDetailsByWriter
@@ -1325,37 +1336,23 @@ namespace iroha {
         return boost::none;
       }
 
-      bool recordIdMustHaveWriter() const {
-        return not requestedWriter();
-      }
-
-      bool recordIdMustHaveKey() const {
-        return not requestedKey();
-      }
-
-      boost::optional<std::string> makeFirstRecordWriterIfNeeded(size_t i) {
-        if (recordIdMustHaveWriter()) {
-          return makeAccountId(i);
-        }
-        return boost::none;
-      }
-
-      boost::optional<std::string> makeFirstRecordKeyIfNeeded(size_t i) {
-        if (recordIdMustHaveKey()) {
-          return makeKey(i);
-        }
-        return boost::none;
-      }
-
       QueryExecutorResult queryPage(
           boost::optional<std::string> first_record_writer,
           boost::optional<std::string> first_record_key,
           size_t page_size) {
-        return GetAccountDetailPagedExecutorTest::queryPage(requestedWriter(),
-                                                            requestedKey(),
-                                                            first_record_writer,
-                                                            first_record_key,
-                                                            page_size);
+        /*
+        static const auto default_to = [this](auto default_val) {
+          return [this, default_val](const auto &alternative) {
+            return boost::make_optional(default_val.value_or(alternative));
+          };
+        };
+        */
+        return GetAccountDetailPagedExecutorTest::queryPage(
+            requestedWriter(),
+            requestedKey(),
+            first_record_writer | defaultTo(requestedWriter()),
+            first_record_key | defaultTo(requestedKey()),
+            page_size);
       }
 
       void validatePageResponse(
@@ -1365,14 +1362,13 @@ namespace iroha {
           size_t page_size) {
         checkSuccessfulResult<shared_model::interface::AccountDetailResponse>(
             response, [&, this](const auto &response) {
-              return this
-                  ->GetAccountDetailPagedExecutorTest::validatePageResponse(
-                      response,
-                      this->requestedWriter(),
-                      this->requestedKey(),
-                      first_record_writer,
-                      first_record_key,
-                      page_size);
+              Response expected_response = this->getExpectedResponse(
+                  this->requestedWriter(),
+                  this->requestedKey(),
+                  first_record_writer | defaultTo(this->requestedWriter()),
+                  first_record_key | defaultTo(this->requestedKey()),
+                  page_size);
+              this->validatePageResponse(response, expected_response);
             });
       }
 
@@ -1382,6 +1378,14 @@ namespace iroha {
         auto response = queryPage(args...);
         validatePageResponse(response, args...);
         return response;
+      }
+
+     protected:
+      template <typename... Args>
+      auto validatePageResponse(Args &&... args) -> decltype(
+          GetAccountDetailPagedExecutorTest::validatePageResponse(args...)) {
+        return GetAccountDetailPagedExecutorTest::validatePageResponse(
+            std::forward<Args>(args)...);
       }
     };
 
@@ -1393,20 +1397,17 @@ namespace iroha {
     TEST_P(GetAccountDetailPagedExecutorTestParametric,
            MiddlePageAcrossWriters) {
       addDetails(4, 2);
-      queryPageAndValidateResponse(
-          makeFirstRecordWriterIfNeeded(1), makeFirstRecordKeyIfNeeded(1), 3);
+      queryPageAndValidateResponse(makeAccountId(1), makeKey(1), 3);
     }
 
     TEST_P(GetAccountDetailPagedExecutorTestParametric, MiddlePageAcrossKeys) {
       addDetails(2, 4);
-      queryPageAndValidateResponse(
-          makeFirstRecordWriterIfNeeded(1), makeFirstRecordKeyIfNeeded(1), 2);
+      queryPageAndValidateResponse(makeAccountId(1), makeKey(1), 2);
     }
 
     TEST_P(GetAccountDetailPagedExecutorTestParametric, LastPage) {
       addDetails(3, 3);
-      queryPageAndValidateResponse(
-          makeFirstRecordWriterIfNeeded(2), makeFirstRecordKeyIfNeeded(2), 2);
+      queryPageAndValidateResponse(makeAccountId(2), makeKey(2), 2);
     }
 
     INSTANTIATE_TEST_CASE_P(
