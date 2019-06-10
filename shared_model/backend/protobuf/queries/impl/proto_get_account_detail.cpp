@@ -55,9 +55,10 @@ namespace shared_model {
 
     boost::optional<const interface::AccountDetailPaginationMeta &>
     GetAccountDetail::paginationMeta() const {
-      return pagination_meta_
-          ? *pagination_meta_
-          : boost::optional<const interface::AccountDetailPaginationMeta &>{};
+      if (pagination_meta_) {
+        return *pagination_meta_;
+      }
+      return boost::none;
     }
 
   }  // namespace proto

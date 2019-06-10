@@ -426,13 +426,9 @@ namespace shared_model {
         const interface::AccountDetailPaginationMeta &pagination_meta) const {
       validatePaginationMetaPageSize(reason, pagination_meta.pageSize());
       pagination_meta.firstRecordId() |
-          [&pagination_meta, &reason, this](const auto &first_record_id) {
-            first_record_id.writer() | [&reason, this](const auto &writer) {
-              this->validateAccountId(reason, writer);
-            };
-            first_record_id.key() | [&reason, this](const auto &key) {
-              this->validateAccountDetailKey(reason, key);
-            };
+          [&reason, this](const auto &first_record_id) {
+            this->validateAccountId(reason, first_record_id.writer());
+            this->validateAccountDetailKey(reason, first_record_id.key());
           };
     }
 

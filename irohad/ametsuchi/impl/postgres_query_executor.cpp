@@ -1036,9 +1036,7 @@ namespace iroha {
           ),
           total_number as (select count(1) total_number from filtered_plain_data),
           next_record as (
-              select
-                  nullif(writer, :writer) as writer,
-                  nullif(key, :key) as key
+              select writer, key
               from
                   filtered_plain_data,
                   page_limits

@@ -6,9 +6,10 @@
 #ifndef IROHA_SHARED_PROTO_MODEL_QUERY_ACCOUNT_DETAIL_RECORD_ID_HPP
 #define IROHA_SHARED_PROTO_MODEL_QUERY_ACCOUNT_DETAIL_RECORD_ID_HPP
 
+#include "interfaces/queries/account_detail_record_id.hpp"
+
 #include "backend/protobuf/common_objects/trivial_proto.hpp"
 #include "interfaces/common_objects/types.hpp"
-#include "interfaces/queries/account_detail_record_id.hpp"
 #include "primitive.pb.h"
 
 namespace shared_model {
@@ -20,29 +21,13 @@ namespace shared_model {
                                iroha::protocol::AccountDetailRecordId,
                                AccountDetailRecordId> {
      public:
-      template <typename QueryType,
-                typename = std::enable_if_t<
-                    std::is_same<std::decay_t<QueryType>, TransportType>::value
-                    or std::is_same<std::decay_t<QueryType>,
-                                    shared_model::detail::ReferenceHolder<
-                                        TransportType>>::value>>
-      explicit AccountDetailRecordId(QueryType &&query);
+      explicit AccountDetailRecordId(const TransportType &query);
 
-      AccountDetailRecordId(const AccountDetailRecordId &o);
-      AccountDetailRecordId(AccountDetailRecordId &&o) noexcept;
+      explicit AccountDetailRecordId(const AccountDetailRecordId &o);
 
-      boost::optional<shared_model::interface::types::AccountIdType> writer()
-          const override;
+      shared_model::interface::types::AccountIdType writer() const override;
 
-      boost::optional<shared_model::interface::types::AccountDetailKeyType>
-      key() const override;
-
-     private:
-      const boost::optional<shared_model::interface::types::AccountIdType>
-          writer_;
-      const boost::optional<
-          shared_model::interface::types::AccountDetailKeyType>
-          key_;
+      shared_model::interface::types::AccountDetailKeyType key() const override;
     };
   }  // namespace proto
 }  // namespace shared_model

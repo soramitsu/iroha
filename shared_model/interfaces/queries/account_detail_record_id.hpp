@@ -13,17 +13,15 @@
 namespace shared_model {
   namespace interface {
 
-    /// Provides query metadata for any transaction list pagination.
+    /// Provides query metadata for account detail list pagination.
     class AccountDetailRecordId : public ModelPrimitive<AccountDetailRecordId> {
      public:
 
-      /// Get the writer, if provided.
-      virtual boost::optional<interface::types::AccountIdType> writer()
-          const = 0;
+      /// Get the writer.
+      virtual interface::types::AccountIdType writer() const = 0;
 
-      /// Get the key, if provided.
-      virtual boost::optional<interface::types::AccountDetailKeyType> key()
-          const = 0;
+      /// Get the key.
+      virtual interface::types::AccountDetailKeyType key() const = 0;
 
       std::string toString() const override;
 

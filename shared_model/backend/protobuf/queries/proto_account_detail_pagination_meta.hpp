@@ -23,16 +23,9 @@ namespace shared_model {
                                iroha::protocol::AccountDetailPaginationMeta,
                                AccountDetailPaginationMeta> {
      public:
-      template <typename QueryType,
-                typename = std::enable_if_t<
-                    std::is_same<std::decay_t<QueryType>, TransportType>::value
-                    or std::is_same<std::decay_t<QueryType>,
-                                    shared_model::detail::ReferenceHolder<
-                                        TransportType>>::value>>
-      explicit AccountDetailPaginationMeta(QueryType &&query);
+      explicit AccountDetailPaginationMeta(const TransportType &query);
 
       AccountDetailPaginationMeta(const AccountDetailPaginationMeta &o);
-      AccountDetailPaginationMeta(AccountDetailPaginationMeta &&o) noexcept;
 
       size_t pageSize() const override;
 
