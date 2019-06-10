@@ -7,11 +7,11 @@
 
 using namespace shared_model::proto;
 
-AccountDetailRecordId::AccountDetailRecordId(const TransportType &query)
-    : CopyableProto(query) {}
+AccountDetailRecordId::AccountDetailRecordId(const TransportType *proto)
+    : proto_(proto) {}
 
 AccountDetailRecordId::AccountDetailRecordId(const AccountDetailRecordId &o)
-    : AccountDetailRecordId(*o.proto_) {}
+    : AccountDetailRecordId(o.proto_) {}
 
 shared_model::interface::types::AccountIdType AccountDetailRecordId::writer()
     const {

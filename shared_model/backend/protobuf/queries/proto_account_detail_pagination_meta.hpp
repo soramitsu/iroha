@@ -8,7 +8,6 @@
 
 #include "interfaces/queries/account_detail_pagination_meta.hpp"
 
-#include "backend/protobuf/common_objects/trivial_proto.hpp"
 #include "backend/protobuf/queries/proto_account_detail_record_id.hpp"
 #include "interfaces/common_objects/types.hpp"
 #include "interfaces/queries/account_detail_record_id.hpp"
@@ -19,11 +18,11 @@ namespace shared_model {
 
     /// Provides query metadata for AccountDetail list pagination.
     class AccountDetailPaginationMeta final
-        : public CopyableProto<interface::AccountDetailPaginationMeta,
-                               iroha::protocol::AccountDetailPaginationMeta,
-                               AccountDetailPaginationMeta> {
+        : public interface::AccountDetailPaginationMeta {
      public:
-      explicit AccountDetailPaginationMeta(const TransportType &query);
+      using TransportType = iroha::protocol::AccountDetailPaginationMeta;
+
+      explicit AccountDetailPaginationMeta(const TransportType *proto);
 
       AccountDetailPaginationMeta(const AccountDetailPaginationMeta &o);
 
@@ -33,6 +32,7 @@ namespace shared_model {
           const override;
 
      private:
+      const TransportType *const proto_;
       const boost::optional<const AccountDetailRecordId> first_record_id_;
     };
   }  // namespace proto
