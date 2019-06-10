@@ -11,8 +11,7 @@ AccountDetailPaginationMeta::AccountDetailPaginationMeta(
     const TransportType &query)
     : CopyableProto(query),
       first_record_id_{[this]() -> decltype(first_record_id_) {
-        if (proto_->opt_first_record_id_case()
-            == iroha::protocol::AccountDetailPaginationMeta::kFirstRecordId) {
+        if (proto_->has_first_record_id()) {
           return AccountDetailRecordId{this->proto_->first_record_id()};
         }
         return boost::none;

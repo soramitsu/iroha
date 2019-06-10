@@ -14,8 +14,7 @@ namespace shared_model {
         : CopyableProto(std::forward<QueryResponseType>(queryResponse)),
           account_detail_response_{proto_->account_detail_response()},
           next_record_id_{[this]() -> decltype(next_record_id_) {
-            if (this->account_detail_response_.opt_next_record_id_case()
-                == iroha::protocol::AccountDetailResponse::kNextRecordId) {
+            if (this->account_detail_response_.has_next_record_id()) {
               return AccountDetailRecordId{
                   this->account_detail_response_.next_record_id()};
             }
