@@ -998,6 +998,8 @@ namespace iroha {
           });
     }
 
+    // --------| GetAccountDetail - pagination tests |------------------>8 -----
+
     class GetAccountDetailPagedExecutorTest : public QueryExecutorTest {
      public:
       // added account details, {writer -> {key -> value}}
@@ -1265,6 +1267,12 @@ namespace iroha {
       }
     };
 
+    /**
+     * @given account with 9 details from 3 writers, 3 unique keys from each,
+     * and all related permissions
+     * @when queried account details with page metadata not set
+     * @then all 9 detail records are returned and are valid
+     */
     TEST_F(GetAccountDetailPagedExecutorTest, NoPageMetaData) {
       addDetails(3, 3);
 
@@ -1290,12 +1298,20 @@ namespace iroha {
           response, boost::none, boost::none, boost::none, boost::none, 3 * 3);
     }
 
+    /**
+     * @given account with 9 details from 3 writers, 3 unique keys from each,
+     * and all related permissions
+     * @when queried account details with nonexistent page start
+     * @then error corresponding to invalid pagination meta is returned
+     */
     TEST_F(GetAccountDetailPagedExecutorTest, NonExistentFirstRecord) {
       addDetails(1, 1);
       checkStatefulError<shared_model::interface::StatefulFailedErrorResponse>(
           queryPage(boost::none, boost::none, makeAccountId(2), boost::none, 2),
           kInvalidPagination);
     }
+
+    // --------| GetAccountDetail - parametric pagination tests |------->8 -----
 
     enum class GetAccountDetailPagedExecutorTestVariant {
       kAllDetails,
@@ -1389,22 +1405,49 @@ namespace iroha {
       }
     };
 
+    /**
+     * @given account with 9 details from 3 writers, 3 unique keys from each,
+     * and all related permissions
+     * @when queried account details with page size of 2 and first record unset
+     * @then the appropriate detail records are returned and are valid
+     */
     TEST_P(GetAccountDetailPagedExecutorTestParametric, FirstPage) {
       addDetails(3, 3);
       queryPageAndValidateResponse(boost::none, boost::none, 2);
     }
 
+    /**
+     * @given account with 8 details from 4 writers, 2 unique keys from each,
+     * and all related permissions
+     * @when queried account details with page size of 3 and first record set to
+     * the last key of the second writer
+     * @then the appropriate detail records are returned and are valid
+     */
     TEST_P(GetAccountDetailPagedExecutorTestParametric,
            MiddlePageAcrossWriters) {
       addDetails(4, 2);
       queryPageAndValidateResponse(makeAccountId(1), makeKey(1), 3);
     }
 
+    /**
+     * @given account with 8 details from 2 writers, 4 unique keys from each,
+     * and all related permissions
+     * @when queried account details with page size of 2 and first record set to
+     * the second key of the second writer
+     * @then the appropriate detail records are returned and are valid
+     */
     TEST_P(GetAccountDetailPagedExecutorTestParametric, MiddlePageAcrossKeys) {
       addDetails(2, 4);
       queryPageAndValidateResponse(makeAccountId(1), makeKey(1), 2);
     }
 
+    /**
+     * @given account with 9 details from 3 writers, 3 unique keys from each,
+     * and all related permissions
+     * @when queried account details with page size of 2 and first record set to
+     * the last key of the last writer
+     * @then the appropriate detail records are returned and are valid
+     */
     TEST_P(GetAccountDetailPagedExecutorTestParametric, LastPage) {
       addDetails(3, 3);
       queryPageAndValidateResponse(makeAccountId(2), makeKey(2), 2);
@@ -1418,6 +1461,8 @@ namespace iroha {
             GetAccountDetailPagedExecutorTestVariant::kDetailsByWriter,
             GetAccountDetailPagedExecutorTestVariant::kDetailsByKey,
             GetAccountDetailPagedExecutorTestVariant::kSingleDetail), );
+
+    // --------------| GetBlock tests |---------------------------->8 ----------
 
     class GetBlockExecutorTest : public QueryExecutorTest {
      public:
