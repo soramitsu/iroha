@@ -11,7 +11,6 @@
 #include "backend/protobuf/transaction.hpp"
 #include "cryptography/public_key.hpp"
 #include "interfaces/common_objects/amount.hpp"
-#include "logger/logger.hpp"
 
 namespace {
   /**
@@ -55,10 +54,6 @@ namespace {
   }
 }  // namespace
 
-shared_model::proto::ProtoQueryResponseFactory::ProtoQueryResponseFactory(
-    logger::LoggerPtr log)
-    : log_(std::move(log)) {}
-
 std::unique_ptr<shared_model::interface::QueryResponse>
 shared_model::proto::ProtoQueryResponseFactory::createAccountAssetResponse(
     std::vector<std::tuple<interface::types::AccountIdType,
@@ -97,8 +92,7 @@ shared_model::proto::ProtoQueryResponseFactory::createAccountDetailResponse(
         next_key,
     const crypto::Hash &query_hash) const {
   return createQueryResponse(
-      [this,
-       account_detail = std::move(account_detail),
+      [account_detail = std::move(account_detail),
        total_number,
        &next_writer,
        &next_key](iroha::protocol::QueryResponse &protocol_query_response) {
@@ -109,17 +103,13 @@ shared_model::proto::ProtoQueryResponseFactory::createAccountDetailResponse(
         if (next_writer or next_key) {
           auto protocol_next_record_id =
               protocol_specific_response->mutable_next_record_id();
+          assert(next_writer);
           if (next_writer) {
             protocol_next_record_id->set_writer(std::move(next_writer).value());
-          } else {
-            log_->error("next_writer not set for next_record_id!");
-            assert(next_writer);
           }
+          assert(next_key);
           if (next_key) {
             protocol_next_record_id->set_key(std::move(next_key).value());
-          } else {
-            log_->error("next_key not set for next_record_id!");
-            assert(next_key);
           }
         }
       },

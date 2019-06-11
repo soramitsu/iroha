@@ -40,8 +40,7 @@ struct QueryFixture {
     pending_transactions_ =
         std::make_shared<iroha::MockPendingTransactionStorage>();
     auto query_response_factory_ =
-        std::make_shared<shared_model::proto::ProtoQueryResponseFactory>(
-            logger::getDummyLoggerPtr());
+        std::make_shared<shared_model::proto::ProtoQueryResponseFactory>();
     qry_processor_ = std::make_shared<iroha::torii::QueryProcessorImpl>(
         storage_,
         storage_,

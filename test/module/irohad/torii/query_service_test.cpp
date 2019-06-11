@@ -78,8 +78,7 @@ class QueryServiceTest : public ::testing::Test {
   }
 
   std::unique_ptr<shared_model::interface::QueryResponse> getResponse() {
-    return shared_model::proto::ProtoQueryResponseFactory(
-               getTestLogger("ProtoQueryResponseFactory"))
+    return shared_model::proto::ProtoQueryResponseFactory()
         .createAccountResponse("a", "ru", 2, "", {"user"}, query->hash());
   }
 

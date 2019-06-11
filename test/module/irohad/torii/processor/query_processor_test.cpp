@@ -42,8 +42,7 @@ class QueryProcessorTest : public ::testing::Test {
     qry_exec = std::make_shared<MockQueryExecutor>();
     storage = std::make_shared<MockStorage>();
     query_response_factory =
-        std::make_shared<shared_model::proto::ProtoQueryResponseFactory>(
-            getTestLogger("ProtoQueryResponseFactory"));
+        std::make_shared<shared_model::proto::ProtoQueryResponseFactory>();
     qpi = std::make_shared<torii::QueryProcessorImpl>(
         storage,
         storage,

@@ -8,15 +8,11 @@
 
 #include "interfaces/iroha_internal/query_response_factory.hpp"
 
-#include "logger/logger_fwd.hpp"
-
 namespace shared_model {
   namespace proto {
 
     class ProtoQueryResponseFactory : public interface::QueryResponseFactory {
      public:
-      ProtoQueryResponseFactory(logger::LoggerPtr log);
-
       std::unique_ptr<interface::QueryResponse> createAccountAssetResponse(
           std::vector<std::tuple<interface::types::AccountIdType,
                                  interface::types::AssetIdType,
@@ -94,9 +90,6 @@ namespace shared_model {
 
       std::unique_ptr<interface::BlockQueryResponse> createBlockQueryResponse(
           std::string error_message) const override;
-
-     private:
-      logger::LoggerPtr log_;
     };
 
   }  // namespace proto

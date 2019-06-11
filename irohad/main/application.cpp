@@ -334,8 +334,7 @@ Irohad::RunResult Irohad::initFactories() {
 
   // query factories
   query_response_factory_ =
-      std::make_shared<shared_model::proto::ProtoQueryResponseFactory>(
-          log_manager_->getChild("ProtoQueryResponseFactory")->getLogger());
+      std::make_shared<shared_model::proto::ProtoQueryResponseFactory>();
 
   std::unique_ptr<shared_model::validation::AbstractValidator<
       shared_model::interface::Query>>

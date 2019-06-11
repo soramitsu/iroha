@@ -8,7 +8,6 @@
 #include <boost/optional.hpp>
 #include "backend/protobuf/common_objects/proto_common_objects_factory.hpp"
 #include "cryptography/crypto_provider/crypto_defaults.hpp"
-#include "framework/test_logger.hpp"
 #include "interfaces/query_responses/account_asset_response.hpp"
 #include "interfaces/query_responses/account_detail_response.hpp"
 #include "interfaces/query_responses/account_response.hpp"
@@ -36,8 +35,7 @@ using shared_model::validation::FieldValidator;
 class ProtoQueryResponseFactoryTest : public ::testing::Test {
  public:
   std::shared_ptr<ProtoQueryResponseFactory> response_factory =
-      std::make_shared<ProtoQueryResponseFactory>(
-          getTestLogger("ProtoQueryResponseFactory"));
+      std::make_shared<ProtoQueryResponseFactory>();
   std::shared_ptr<ProtoCommonObjectsFactory<FieldValidator>> objects_factory =
       std::make_shared<ProtoCommonObjectsFactory<FieldValidator>>(
           iroha::test::kTestsValidatorsConfig);

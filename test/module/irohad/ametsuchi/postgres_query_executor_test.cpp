@@ -137,8 +137,7 @@ namespace iroha {
             std::string('2', 32));
 
         query_response_factory =
-            std::make_shared<shared_model::proto::ProtoQueryResponseFactory>(
-                getTestLogger("ProtoQueryResponseFactory"));
+            std::make_shared<shared_model::proto::ProtoQueryResponseFactory>();
       }
 
       void SetUp() override {

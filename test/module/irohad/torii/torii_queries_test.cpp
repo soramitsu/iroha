@@ -66,8 +66,7 @@ class ToriiQueriesTest : public testing::Test {
     pending_txs_storage =
         std::make_shared<iroha::MockPendingTransactionStorage>();
     query_response_factory =
-        std::make_shared<shared_model::proto::ProtoQueryResponseFactory>(
-            getTestLogger("ProtoQueryResponseFactory"));
+        std::make_shared<shared_model::proto::ProtoQueryResponseFactory>();
 
     //----------- Query Service ----------
 
