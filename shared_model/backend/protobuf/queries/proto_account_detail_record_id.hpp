@@ -21,7 +21,7 @@ namespace shared_model {
      public:
       using TransportType = iroha::protocol::AccountDetailRecordId;
 
-      explicit AccountDetailRecordId(const TransportType *proto);
+      explicit AccountDetailRecordId(TransportType &proto);
 
       explicit AccountDetailRecordId(const AccountDetailRecordId &o);
 
@@ -30,7 +30,7 @@ namespace shared_model {
       shared_model::interface::types::AccountDetailKeyType key() const override;
 
      private:
-      const TransportType *const proto_;
+      TransportType &proto_;
     };
   }  // namespace proto
 }  // namespace shared_model

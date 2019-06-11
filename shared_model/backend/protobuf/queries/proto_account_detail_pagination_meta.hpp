@@ -22,7 +22,7 @@ namespace shared_model {
      public:
       using TransportType = iroha::protocol::AccountDetailPaginationMeta;
 
-      explicit AccountDetailPaginationMeta(const TransportType *proto);
+      explicit AccountDetailPaginationMeta(TransportType &proto);
 
       AccountDetailPaginationMeta(const AccountDetailPaginationMeta &o);
 
@@ -32,7 +32,7 @@ namespace shared_model {
           const override;
 
      private:
-      const TransportType *const proto_;
+      TransportType &proto_;
       const boost::optional<const AccountDetailRecordId> first_record_id_;
     };
   }  // namespace proto

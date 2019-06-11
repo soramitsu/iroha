@@ -7,7 +7,7 @@
 
 using namespace shared_model::proto;
 
-AccountDetailRecordId::AccountDetailRecordId(const TransportType *proto)
+AccountDetailRecordId::AccountDetailRecordId(TransportType &proto)
     : proto_(proto) {}
 
 AccountDetailRecordId::AccountDetailRecordId(const AccountDetailRecordId &o)
@@ -15,10 +15,10 @@ AccountDetailRecordId::AccountDetailRecordId(const AccountDetailRecordId &o)
 
 shared_model::interface::types::AccountIdType AccountDetailRecordId::writer()
     const {
-  return proto_->writer();
+  return proto_.writer();
 }
 
 shared_model::interface::types::AccountDetailKeyType
 AccountDetailRecordId::key() const {
-  return proto_->key();
+  return proto_.key();
 }

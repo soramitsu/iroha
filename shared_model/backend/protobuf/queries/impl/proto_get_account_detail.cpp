@@ -14,9 +14,10 @@ namespace shared_model {
           account_detail_{proto_->payload().get_account_detail()},
           pagination_meta_{[this]() -> decltype(pagination_meta_) {
             if (this->account_detail_.has_pagination_meta()) {
-              return AccountDetailPaginationMeta{&this->proto_->payload()
-                                                      .get_account_detail()
-                                                      .pagination_meta()};
+              return AccountDetailPaginationMeta{
+                  *this->proto_->mutable_payload()
+                       ->mutable_get_account_detail()
+                       ->mutable_pagination_meta()};
             }
             return boost::none;
           }()} {}
