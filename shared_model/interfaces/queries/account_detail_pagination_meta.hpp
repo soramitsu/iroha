@@ -8,6 +8,7 @@
 
 #include <boost/optional.hpp>
 #include "interfaces/base/model_primitive.hpp"
+#include "interfaces/base/noncopyable_model_primitive.hpp"
 #include "interfaces/common_objects/types.hpp"
 #include "interfaces/queries/account_detail_record_id.hpp"
 
@@ -16,7 +17,7 @@ namespace shared_model {
 
     /// Provides query metadata for account detail list pagination.
     class AccountDetailPaginationMeta
-        : public ModelPrimitive<AccountDetailPaginationMeta> {
+        : public NonCopyableModelPrimitive<AccountDetailPaginationMeta> {
      public:
 
       /// Get the requested page size.

@@ -17,17 +17,20 @@ namespace shared_model {
 
     /// Provides query metadata for AccountDetail list pagination.
     class AccountDetailRecordId final
-        : public CopyableProto<interface::AccountDetailRecordId,
-                               iroha::protocol::AccountDetailRecordId,
-                               AccountDetailRecordId> {
+        : public interface::AccountDetailRecordId {
      public:
-      explicit AccountDetailRecordId(const TransportType &query);
+      using TransportType = iroha::protocol::AccountDetailRecordId;
+
+      explicit AccountDetailRecordId(TransportType &proto);
 
       explicit AccountDetailRecordId(const AccountDetailRecordId &o);
 
       shared_model::interface::types::AccountIdType writer() const override;
 
       shared_model::interface::types::AccountDetailKeyType key() const override;
+
+     private:
+      TransportType &proto_;
     };
   }  // namespace proto
 }  // namespace shared_model
