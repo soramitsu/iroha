@@ -999,7 +999,8 @@ namespace iroha {
           QueryType<shared_model::interface::types::DetailType,
                     uint32_t,
                     shared_model::interface::types::AccountIdType,
-                    shared_model::interface::types::AccountDetailKeyType>;
+                    shared_model::interface::types::AccountDetailKeyType,
+                    uint32_t>;
       using PermissionTuple = boost::tuple<int>;
 
       auto cmd = (boost::format(R"(
@@ -1056,16 +1057,23 @@ namespace iroha {
                       coalesce(rn < page_limits.end, true)
                   group by writer
               ) t
+          ),
+          target_account_exists as (
+            select count(1) val
+            from account
+            where account_id = :account_id
           )
           select
               page.json json,
               total_number,
               next_record.writer next_writer,
-              next_record.key next_key
+              next_record.key next_key,
+              target_account_exists.val target_account_exists
           from
               page
               left join total_number on true
               left join next_record on true
+              right join target_account_exists on true
       )
       select detail.*, perm from detail
       right join has_perms on true
@@ -1104,6 +1112,8 @@ namespace iroha {
           },
           [&, this](auto range, auto &) {
             if (range.empty()) {
+              assert(not range.empty());
+              log_->error("Empty response range in {}.", q);
               return this->logAndReturnErrorResponse(
                   QueryErrorType::kNoAccountDetail, q.accountId(), 0);
             }
@@ -1113,7 +1123,15 @@ namespace iroha {
                 [&, this](auto &json,
                           auto &total_number,
                           auto &next_writer,
-                          auto &next_key) {
+                          auto &next_key,
+                          auto &target_account_exists) {
+                  if (target_account_exists.value_or(0) == 0) {
+                    // TODO 2019.06.11 mboldyrev IR-558 redesign missing data
+                    // handling
+                    return this->logAndReturnErrorResponse(
+                        QueryErrorType::kNoAccountDetail, q.accountId(), 0);
+                  }
+                  assert(target_account_exists.value() == 1);
                   if (json) {
                     BOOST_ASSERT_MSG(total_number, "Mandatory value missing!");
                     if (not total_number) {
@@ -1132,6 +1150,8 @@ namespace iroha {
                         QueryErrorType::kStatefulFailed, q.accountId(), 4);
                   } else {
                     // no account details matching query
+                    // TODO 2019.06.11 mboldyrev IR-558 redesign missing data
+                    // handling
                     return query_response_factory_->createAccountDetailResponse(
                         kEmptyDetailsResponse, query_hash_);
                   }
