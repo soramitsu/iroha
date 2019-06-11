@@ -16,7 +16,8 @@ namespace shared_model {
           next_record_id_{[this]() -> decltype(next_record_id_) {
             if (this->account_detail_response_.has_next_record_id()) {
               return AccountDetailRecordId{
-                  this->account_detail_response_.next_record_id()};
+                  *this->proto_->mutable_account_detail_response()
+                       ->mutable_next_record_id()};
             }
             return boost::none;
           }()} {}
