@@ -87,30 +87,22 @@ std::unique_ptr<shared_model::interface::QueryResponse>
 shared_model::proto::ProtoQueryResponseFactory::createAccountDetailResponse(
     shared_model::interface::types::DetailType account_detail,
     size_t total_number,
-    boost::optional<shared_model::interface::types::AccountIdType> next_writer,
-    boost::optional<shared_model::interface::types::AccountDetailKeyType>
-        next_key,
+    boost::optional<shared_model::interface::types::AccountDetailRecordId>
+        next_record_id,
     const crypto::Hash &query_hash) const {
   return createQueryResponse(
-      [account_detail = std::move(account_detail),
-       total_number,
-       &next_writer,
-       &next_key](iroha::protocol::QueryResponse &protocol_query_response) {
+      [&account_detail, total_number, &next_record_id](
+          iroha::protocol::QueryResponse &protocol_query_response) {
         iroha::protocol::AccountDetailResponse *protocol_specific_response =
             protocol_query_response.mutable_account_detail_response();
         protocol_specific_response->set_detail(account_detail);
         protocol_specific_response->set_total_number(total_number);
-        if (next_writer or next_key) {
+        if (next_record_id) {
           auto protocol_next_record_id =
               protocol_specific_response->mutable_next_record_id();
-          assert(next_writer);
-          if (next_writer) {
-            protocol_next_record_id->set_writer(std::move(next_writer).value());
-          }
-          assert(next_key);
-          if (next_key) {
-            protocol_next_record_id->set_key(std::move(next_key).value());
-          }
+          protocol_next_record_id->set_writer(
+              std::move(next_record_id->writer));
+          protocol_next_record_id->set_key(std::move(next_record_id->key));
         }
       },
       query_hash);

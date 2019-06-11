@@ -1120,11 +1120,33 @@ namespace iroha {
                           "getAccountDetail query result {}.",
                           q);
                     }
+                    boost::optional<
+                        shared_model::interface::types::AccountDetailRecordId>
+                        next_record_id{[this, &next_writer, &next_key]()
+                                           -> decltype(next_record_id) {
+                          if (next_key or next_writer) {
+                            if (not next_writer) {
+                              log_->error(
+                                  "next_writer not set for next_record_id!");
+                              assert(next_writer);
+                              return boost::none;
+                            }
+                            if (not next_key) {
+                              log_->error(
+                                  "next_key not set for next_record_id!");
+                              assert(next_key);
+                              return boost::none;
+                            }
+                            return shared_model::interface::types::
+                                AccountDetailRecordId{next_writer.value(),
+                                                      next_key.value()};
+                          }
+                          return boost::none;
+                        }()};
                     return query_response_factory_->createAccountDetailResponse(
                         json.value(),
                         total_number.value_or(0),
-                        next_writer,
-                        next_key,
+                        next_record_id,
                         query_hash_);
                   }
                   if (total_number.value_or(0) > 0) {
