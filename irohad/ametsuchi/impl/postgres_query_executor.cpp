@@ -150,6 +150,8 @@ namespace {
     };
   }
 
+  static const std::string kEmptyDetailsResponse{"{}"};
+
 }  // namespace
 
 namespace iroha {
@@ -236,7 +238,7 @@ namespace iroha {
     }
 
     template<typename T>
-    auto ResultWithoutNulls(T range) {
+    auto resultWithoutNulls(T range) {
       return range
           | boost::adaptors::transformed([](auto &&t) { return rebind(t); })
           | boost::adaptors::filtered(
@@ -473,7 +475,7 @@ namespace iroha {
       return executeQuery<QueryTuple, PermissionTuple>(
           applier(query),
           [&](auto range, auto &) {
-            auto range_without_nulls = ResultWithoutNulls(std::move(range));
+            auto range_without_nulls = resultWithoutNulls(std::move(range));
             uint64_t total_size = 0;
             if (not boost::empty(range_without_nulls)) {
               total_size = boost::get<2>(*range_without_nulls.begin());
@@ -587,7 +589,7 @@ namespace iroha {
                     soci::use(q.accountId(), "target_account_id"));
           },
           [this, &q, &query_apply](auto range, auto &) {
-            auto range_without_nulls = ResultWithoutNulls(std::move(range));
+            auto range_without_nulls = resultWithoutNulls(std::move(range));
             if (range_without_nulls.empty()) {
               return this->logAndReturnErrorResponse(
                   QueryErrorType::kNoAccount, q.accountId(), 0);
@@ -674,7 +676,7 @@ namespace iroha {
       return executeQuery<QueryTuple, PermissionTuple>(
           [&] { return (sql_.prepare << cmd, soci::use(q.accountId())); },
           [this, &q](auto range, auto &) {
-            auto range_without_nulls = ResultWithoutNulls(std::move(range));
+            auto range_without_nulls = resultWithoutNulls(std::move(range));
             if (range_without_nulls.empty()) {
               return this->logAndReturnErrorResponse(
                   QueryErrorType::kNoSignatories, q.accountId(), 0);
@@ -775,7 +777,7 @@ namespace iroha {
             return (sql_.prepare << cmd, soci::use(creator_id_, "account_id"));
           },
           [&](auto range, auto &my_perm, auto &all_perm) {
-            auto range_without_nulls = ResultWithoutNulls(std::move(range));
+            auto range_without_nulls = resultWithoutNulls(std::move(range));
             if (boost::size(range_without_nulls)
                 != q.transactionHashes().size()) {
               // TODO [IR-1816] Akvinikym 03.12.18: replace magic number 4
@@ -947,7 +949,7 @@ namespace iroha {
                     soci::use(req_page_size, "page_size"));
           },
           [&](auto range, auto &) {
-            auto range_without_nulls = ResultWithoutNulls(std::move(range));
+            auto range_without_nulls = resultWithoutNulls(std::move(range));
             std::vector<
                 std::tuple<shared_model::interface::types::AccountIdType,
                            shared_model::interface::types::AssetIdType,
@@ -1130,8 +1132,8 @@ namespace iroha {
                         QueryErrorType::kStatefulFailed, q.accountId(), 4);
                   } else {
                     // no account details matching query
-                    return this->logAndReturnErrorResponse(
-                        QueryErrorType::kNoAccountDetail, q.accountId(), 0);
+                    return query_response_factory_->createAccountDetailResponse(
+                        kEmptyDetailsResponse, query_hash_);
                   }
                 });
           },
@@ -1159,7 +1161,7 @@ namespace iroha {
                     soci::use(creator_id_, "role_account_id"));
           },
           [&](auto range, auto &) {
-            auto range_without_nulls = ResultWithoutNulls(std::move(range));
+            auto range_without_nulls = resultWithoutNulls(std::move(range));
             auto roles = boost::copy_range<
                 std::vector<shared_model::interface::types::RoleIdType>>(
                 range_without_nulls | boost::adaptors::transformed([](auto t) {
@@ -1193,7 +1195,7 @@ namespace iroha {
                     soci::use(q.roleId(), "role_name"));
           },
           [this, &q](auto range, auto &) {
-            auto range_without_nulls = ResultWithoutNulls(std::move(range));
+            auto range_without_nulls = resultWithoutNulls(std::move(range));
             if (range_without_nulls.empty()) {
               return this->logAndReturnErrorResponse(
                   QueryErrorType::kNoRoles,
@@ -1232,7 +1234,7 @@ namespace iroha {
                     soci::use(q.assetId(), "asset_id"));
           },
           [this, &q](auto range, auto &) {
-            auto range_without_nulls = ResultWithoutNulls(std::move(range));
+            auto range_without_nulls = resultWithoutNulls(std::move(range));
             if (range_without_nulls.empty()) {
               return this->logAndReturnErrorResponse(
                   QueryErrorType::kNoAsset,
