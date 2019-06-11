@@ -60,6 +60,8 @@ namespace shared_model {
       /**
        * Create response for account detail query
        * @param account_detail to be inserted into the response
+       * @param total_number the total number of detail records matching the
+       * query, regardless of pagination metadata
        * @param next_record_id the next record id, if any
        * @param query_hash - hash of the query, for which response is created
        * @return account detail response

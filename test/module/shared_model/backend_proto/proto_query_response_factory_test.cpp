@@ -123,10 +123,14 @@ TEST_F(ProtoQueryResponseFactoryTest, CreateAccountDetailResponse) {
 
   const DetailType account_details = "{ fav_meme : doge }";
   const size_t total_number = 999;
-  const boost::optional<AccountIdType> next_writer("pepe@uganda");
-  const boost::optional<AccountDetailKeyType> next_key = boost::none;
+  const AccountIdType next_writer("pepe@uganda");
+  const AccountDetailKeyType next_key("fav_chan");
   auto query_response = response_factory->createAccountDetailResponse(
-      account_details, total_number, next_writer, next_key, kQueryHash);
+      account_details,
+      total_number,
+      shared_model::interface::types::AccountDetailRecordId{next_writer,
+                                                            next_key},
+      kQueryHash);
 
   ASSERT_TRUE(query_response);
   ASSERT_EQ(query_response->queryHash(), kQueryHash);
