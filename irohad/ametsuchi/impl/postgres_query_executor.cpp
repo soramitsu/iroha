@@ -475,7 +475,7 @@ namespace iroha {
       return executeQuery<QueryTuple, PermissionTuple>(
           applier(query),
           [&](auto range, auto &) {
-            auto range_without_nulls = ResultWithoutNulls(std::move(range));
+            auto range_without_nulls = resultWithoutNulls(std::move(range));
             uint64_t total_size = 0;
             if (not boost::empty(range_without_nulls)) {
               total_size = boost::get<2>(*range_without_nulls.begin());
