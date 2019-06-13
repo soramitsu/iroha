@@ -150,6 +150,8 @@ namespace {
     };
   }
 
+  static const std::string kEmptyDetailsResponse{"{}"};
+
 }  // namespace
 
 namespace iroha {
@@ -236,7 +238,7 @@ namespace iroha {
     }
 
     template<typename T>
-    auto ResultWithoutNulls(T range) {
+    auto resultWithoutNulls(T range) {
       return range
           | boost::adaptors::transformed([](auto &&t) { return rebind(t); })
           | boost::adaptors::filtered(
@@ -587,7 +589,7 @@ namespace iroha {
                     soci::use(q.accountId(), "target_account_id"));
           },
           [this, &q, &query_apply](auto range, auto &) {
-            auto range_without_nulls = ResultWithoutNulls(std::move(range));
+            auto range_without_nulls = resultWithoutNulls(std::move(range));
             if (range_without_nulls.empty()) {
               return this->logAndReturnErrorResponse(
                   QueryErrorType::kNoAccount, q.accountId(), 0);
@@ -674,7 +676,7 @@ namespace iroha {
       return executeQuery<QueryTuple, PermissionTuple>(
           [&] { return (sql_.prepare << cmd, soci::use(q.accountId())); },
           [this, &q](auto range, auto &) {
-            auto range_without_nulls = ResultWithoutNulls(std::move(range));
+            auto range_without_nulls = resultWithoutNulls(std::move(range));
             if (range_without_nulls.empty()) {
               return this->logAndReturnErrorResponse(
                   QueryErrorType::kNoSignatories, q.accountId(), 0);
@@ -775,7 +777,7 @@ namespace iroha {
             return (sql_.prepare << cmd, soci::use(creator_id_, "account_id"));
           },
           [&](auto range, auto &my_perm, auto &all_perm) {
-            auto range_without_nulls = ResultWithoutNulls(std::move(range));
+            auto range_without_nulls = resultWithoutNulls(std::move(range));
             if (boost::size(range_without_nulls)
                 != q.transactionHashes().size()) {
               // TODO [IR-1816] Akvinikym 03.12.18: replace magic number 4
@@ -947,7 +949,7 @@ namespace iroha {
                     soci::use(req_page_size, "page_size"));
           },
           [&](auto range, auto &) {
-            auto range_without_nulls = ResultWithoutNulls(std::move(range));
+            auto range_without_nulls = resultWithoutNulls(std::move(range));
             std::vector<
                 std::tuple<shared_model::interface::types::AccountIdType,
                            shared_model::interface::types::AssetIdType,
@@ -997,7 +999,8 @@ namespace iroha {
           QueryType<shared_model::interface::types::DetailType,
                     uint32_t,
                     shared_model::interface::types::AccountIdType,
-                    shared_model::interface::types::AccountDetailKeyType>;
+                    shared_model::interface::types::AccountDetailKeyType,
+                    uint32_t>;
       using PermissionTuple = boost::tuple<int>;
 
       auto cmd = (boost::format(R"(
@@ -1054,16 +1057,23 @@ namespace iroha {
                       coalesce(rn < page_limits.end, true)
                   group by writer
               ) t
+          ),
+          target_account_exists as (
+            select count(1) val
+            from account
+            where account_id = :account_id
           )
           select
               page.json json,
               total_number,
               next_record.writer next_writer,
-              next_record.key next_key
+              next_record.key next_key,
+              target_account_exists.val target_account_exists
           from
               page
               left join total_number on true
               left join next_record on true
+              right join target_account_exists on true
       )
       select detail.*, perm from detail
       right join has_perms on true
@@ -1102,6 +1112,8 @@ namespace iroha {
           },
           [&, this](auto range, auto &) {
             if (range.empty()) {
+              assert(not range.empty());
+              log_->error("Empty response range in {}.", q);
               return this->logAndReturnErrorResponse(
                   QueryErrorType::kNoAccountDetail, q.accountId(), 0);
             }
@@ -1111,7 +1123,15 @@ namespace iroha {
                 [&, this](auto &json,
                           auto &total_number,
                           auto &next_writer,
-                          auto &next_key) {
+                          auto &next_key,
+                          auto &target_account_exists) {
+                  if (target_account_exists.value_or(0) == 0) {
+                    // TODO 2019.06.11 mboldyrev IR-558 redesign missing data
+                    // handling
+                    return this->logAndReturnErrorResponse(
+                        QueryErrorType::kNoAccountDetail, q.accountId(), 0);
+                  }
+                  assert(target_account_exists.value() == 1);
                   if (json) {
                     BOOST_ASSERT_MSG(total_number, "Mandatory value missing!");
                     if (not total_number) {
@@ -1120,34 +1140,8 @@ namespace iroha {
                           "getAccountDetail query result {}.",
                           q);
                     }
-                    boost::optional<
-                        shared_model::interface::types::AccountDetailRecordId>
-                        next_record_id{[this, &next_writer, &next_key]()
-                                           -> decltype(next_record_id) {
-                          if (next_key or next_writer) {
-                            if (not next_writer) {
-                              log_->error(
-                                  "next_writer not set for next_record_id!");
-                              assert(next_writer);
-                              return boost::none;
-                            }
-                            if (not next_key) {
-                              log_->error(
-                                  "next_key not set for next_record_id!");
-                              assert(next_key);
-                              return boost::none;
-                            }
-                            return shared_model::interface::types::
-                                AccountDetailRecordId{next_writer.value(),
-                                                      next_key.value()};
-                          }
-                          return boost::none;
-                        }()};
                     return query_response_factory_->createAccountDetailResponse(
-                        json.value(),
-                        total_number.value_or(0),
-                        next_record_id,
-                        query_hash_);
+                        json.value(), query_hash_);
                   }
                   if (total_number.value_or(0) > 0) {
                     // the only reason for it is nonexistent first record
@@ -1156,8 +1150,10 @@ namespace iroha {
                         QueryErrorType::kStatefulFailed, q.accountId(), 4);
                   } else {
                     // no account details matching query
-                    return this->logAndReturnErrorResponse(
-                        QueryErrorType::kNoAccountDetail, q.accountId(), 0);
+                    // TODO 2019.06.11 mboldyrev IR-558 redesign missing data
+                    // handling
+                    return query_response_factory_->createAccountDetailResponse(
+                        kEmptyDetailsResponse, query_hash_);
                   }
                 });
           },
@@ -1185,7 +1181,7 @@ namespace iroha {
                     soci::use(creator_id_, "role_account_id"));
           },
           [&](auto range, auto &) {
-            auto range_without_nulls = ResultWithoutNulls(std::move(range));
+            auto range_without_nulls = resultWithoutNulls(std::move(range));
             auto roles = boost::copy_range<
                 std::vector<shared_model::interface::types::RoleIdType>>(
                 range_without_nulls | boost::adaptors::transformed([](auto t) {
@@ -1219,7 +1215,7 @@ namespace iroha {
                     soci::use(q.roleId(), "role_name"));
           },
           [this, &q](auto range, auto &) {
-            auto range_without_nulls = ResultWithoutNulls(std::move(range));
+            auto range_without_nulls = resultWithoutNulls(std::move(range));
             if (range_without_nulls.empty()) {
               return this->logAndReturnErrorResponse(
                   QueryErrorType::kNoRoles,
@@ -1258,7 +1254,7 @@ namespace iroha {
                     soci::use(q.assetId(), "asset_id"));
           },
           [this, &q](auto range, auto &) {
-            auto range_without_nulls = ResultWithoutNulls(std::move(range));
+            auto range_without_nulls = resultWithoutNulls(std::move(range));
             if (range_without_nulls.empty()) {
               return this->logAndReturnErrorResponse(
                   QueryErrorType::kNoAsset,
