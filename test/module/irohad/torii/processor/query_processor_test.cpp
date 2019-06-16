@@ -95,7 +95,8 @@ TEST_F(QueryProcessorTest, QueryProcessorWhereInvokeInvalidQuery) {
                  .signAndAddSignature(keypair)
                  .finish();
   auto *qry_resp =
-      query_response_factory->createAccountDetailResponse("", qry.hash())
+      query_response_factory
+          ->createAccountDetailResponse("", 1, boost::none, qry.hash())
           .release();
 
   EXPECT_CALL(*qry_exec, validateAndExecute_(_)).WillOnce(Return(qry_resp));

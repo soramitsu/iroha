@@ -844,15 +844,17 @@ namespace iroha {
      * @then Return account detail
      */
     TEST_F(GetAccountDetailExecutorTest, ValidMyAccount) {
-      addPerms({shared_model::interface::permissions::Role::kGetMyAccDetail});
+      addPerms({shared_model::interface::permissions::Role::kGetMyAccDetail},
+               account_id2);
       auto query = TestQueryBuilder()
-                       .creatorAccountId(account_id)
-                       .getAccountDetail(kMaxPageSize, account_id)
+                       .creatorAccountId(account_id2)
+                       .getAccountDetail(kMaxPageSize, account_id2)
                        .build();
       auto result = executeQuery(query);
       checkSuccessfulResult<shared_model::interface::AccountDetailResponse>(
-          std::move(result),
-          [](const auto &cast_resp) { ASSERT_EQ(cast_resp.detail(), "{}"); });
+          std::move(result), [this](const auto &cast_resp) {
+            ASSERT_EQ(cast_resp.detail(), this->detail);
+          });
     }
 
     /**
