@@ -556,19 +556,13 @@ Request Schema
 .. code-block:: proto
 
     message AccountDetailRecordId {
-      oneof opt_writer{
-        string writer = 1;
-      }
-      oneof opt_key{
-        string key = 2;
-      }
+      string writer = 1;
+      string key = 2;
     }
 
     message AccountDetailPaginationMeta {
       uint32 page_size = 1;
-      oneof opt_first_record_id {
-        AccountDetailRecordId first_record_id = 2;
-      }
+      AccountDetailRecordId first_record_id = 2;
     }
 
     message GetAccountDetail {
@@ -585,7 +579,8 @@ Request Schema
     }
 
 .. note::
-    Pay attention, that all fields except pagination meta are optional. Reasons will be described later.
+    Pay attention, that all fields except pagination meta are optional.
+    The reasons for that are described below.
 
 .. warning::
     Pagination metadata can be missing in the request for compatibility reasons, but this behaviour is deprecated and should be avoided.
@@ -615,9 +610,7 @@ Response Schema
     message AccountDetailResponse {
       string detail = 1;
       uint64 total_number = 2;
-      oneof opt_next_record_id {
-        AccountDetailRecordId next_record_id = 3;
-      }
+      AccountDetailRecordId next_record_id = 3;
     }
 
 Response Structure
@@ -641,7 +634,7 @@ Possible Stateful Validation Errors
     "1", "Could not get account detail", "Internal error happened", "Try again or contact developers"
     "2", "No such permissions", "Query's creator does not have any of the permissions to get account detail", "Grant the necessary permission: individual, global or domain one"
     "3", "Invalid signatures", "Signatures of this query did not pass validation", "Add more signatures and make sure query's signatures are a subset of account's signatories"
-    "4", "Invalid pagination metadata", "Wrong page size or nonexistent first record", "Set valid page size and leave first record id unspecified"
+    "4", "Invalid pagination metadata", "Wrong page size or nonexistent first record", "Set valid page size, and make sure that the first record id is valid, or leave the first record id unspecified"
 
 Usage Examples
 --------------
