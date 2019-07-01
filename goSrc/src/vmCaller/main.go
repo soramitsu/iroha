@@ -20,7 +20,7 @@ type BalanceType = uint64
 
 type IrohaAppState struct {
 	accounts map[crypto.Address]*acm.Account
-	storage  map[string]Word256
+	storage  map[string][]byte
 	code     map[crypto.Address]*acm.Bytecode
 	balance  map[crypto.Address]BalanceType
 }
@@ -60,21 +60,21 @@ func (state *IrohaAppState) RemoveAccount(address crypto.Address) error {
 	return nil
 }
 
-func (state *IrohaAppState) GetStorage(addr crypto.Address, key Word256) (Word256, error) {
+func (state *IrohaAppState) GetStorage(addr crypto.Address, key Word256) ([]byte, error) {
 	_, ok := state.accounts[addr]
 	if !ok {
-		return Word256{}, errors.New("no such account to get key")
+		return []byte{}, errors.New("no such account to get key")
 	}
 
 	value, ok := state.storage[addr.String()+key.String()]
 	if ok {
 		return value, nil
 	} else {
-		return Zero256, nil
+		return []byte{}, nil
 	}
 }
 
-func (state *IrohaAppState) SetStorage(addr crypto.Address, key Word256, value Word256) error {
+func (state *IrohaAppState) SetStorage(addr crypto.Address, key Word256, value []byte) error {
 	_, ok := state.accounts[addr]
 	if !ok {
 		return errors.New("no such account to set key with word")
@@ -138,7 +138,7 @@ func (state *IrohaAppState) accountsDump() string {
 func newAppState() *IrohaAppState {
 	state := &IrohaAppState{
 		make(map[crypto.Address]*acm.Account),
-		make(map[string]Word256),
+		make(map[string][]byte),
 		make(map[crypto.Address]*acm.Bytecode),
 		make(map[crypto.Address]BalanceType),
 	}
@@ -188,16 +188,17 @@ func VmCall(code, input, caller, callee *C.char) (*C.char, bool) {
 	output, err := ourVm.Call(cache, evm.NewNoopEventSink(), account1, account2,
 		decodedCode, goInput, 0, &gas)
 
-  	fmt.Println("\n\n\nCODE WAS EXECUTED\n\n\n")
+	fmt.Println("\n\n\nCODE WAS EXECUTED\n\n\n")
 	if err == nil {
-    	fmt.Println("\n\n\nALL RIGHT\n\n\n")
+		fmt.Println("\n\n\nALL RIGHT\n\n\n")
 		return C.CString(string(output)), true
 	} else {
 		fmt.Println(err)
-    	fmt.Println("\n\n\nNOT NIL\n\n\n")
+		fmt.Println("\n\n\nNOT NIL\n\n\n")
 		return C.CString(string(output)), false
 	}
 }
 
 
 func main() {}
+
