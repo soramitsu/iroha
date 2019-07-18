@@ -111,3 +111,9 @@ addtest(k_times_reconnection_strategy_test k_times_reconnection_strategy_test.cp
 target_link_libraries(k_times_reconnection_strategy_test
     ametsuchi
     )
+
+addtest(vm_call_test vm_call_test.cpp)
+target_link_libraries(vm_call_test
+    vmCall
+    ametsuchi
+    )
