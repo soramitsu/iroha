@@ -85,6 +85,7 @@ add_library(ametsuchi
     impl/tx_presence_cache_impl.cpp
     impl/in_memory_block_storage.cpp
     impl/in_memory_block_storage_factory.cpp
+    impl/proto_command_executor.cpp
     )
 
 add_library(vmCall STATIC IMPORTED GLOBAL)

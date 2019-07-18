@@ -131,3 +131,9 @@ addtest(peer_query_wsv_test peer_query_wsv_test.cpp)
 target_link_libraries(peer_query_wsv_test
     ametsuchi
     )
+
+addtest(vm_call_test vm_call_test.cpp)
+target_link_libraries(vm_call_test
+    vmCall
+    ametsuchi
+    )
