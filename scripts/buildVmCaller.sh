@@ -23,6 +23,6 @@ echo "All sources downloaded, vmCall build is started"
 mkdir -p $GOPATH/src/iroha_protocol
 protoc --proto_path=/opt/iroha/shared_model/schema --go_out $GOPATH/src/iroha_protocol /opt/iroha/shared_model/schema/*.proto
 cd $GOPATH/src/vmCaller
-go build -o vmCall.a -buildmode=c-archive main.go
+go build -o vmCall.a -buildmode=c-archive main.go iroha_app_state.go iroha_event_sink.go
 cp $GOPATH/src/vmCaller/vmCall.a /opt/iroha/irohad/ametsuchi/
 cp $GOPATH/src/vmCaller/vmCall.h /opt/iroha/irohad/ametsuchi/

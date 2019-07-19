@@ -6,6 +6,24 @@
 #include "ametsuchi/vmCall.h"
 
 #include <gtest/gtest.h>
+#include "interfaces/commands/add_asset_quantity.hpp"
+#include "interfaces/commands/add_peer.hpp"
+#include "interfaces/commands/add_signatory.hpp"
+#include "interfaces/commands/add_smart_contract.hpp"
+#include "interfaces/commands/append_role.hpp"
+#include "interfaces/commands/create_account.hpp"
+#include "interfaces/commands/create_asset.hpp"
+#include "interfaces/commands/create_domain.hpp"
+#include "interfaces/commands/create_role.hpp"
+#include "interfaces/commands/detach_role.hpp"
+#include "interfaces/commands/grant_permission.hpp"
+#include "interfaces/commands/remove_signatory.hpp"
+#include "interfaces/commands/revoke_permission.hpp"
+#include "interfaces/commands/set_account_detail.hpp"
+#include "interfaces/commands/set_quorum.hpp"
+#include "interfaces/commands/subtract_asset_quantity.hpp"
+#include "interfaces/commands/transfer_asset.hpp"
+#include "module/irohad/ametsuchi/mock_command_executor.hpp"
 
 TEST(VmCallTest, UsageTest) {
   /*
@@ -53,15 +71,21 @@ contract C {
   char *caller = const_cast<char *>("caller"),
        *callee = const_cast<char *>("Callee"), *empty = const_cast<char *>("");
 
-  auto res = VmCall(code, empty, caller, callee);
+  iroha::ametsuchi::MockCommandExecutor executor;
+  EXPECT_CALL(
+      executor,
+      visit(::testing::A<const shared_model::interface::CreateAccount &>()))
+      .WillRepeatedly(::testing::Return(iroha::expected::Value<void>({})));
+
+  auto res = VmCall(code, empty, caller, callee, &executor);
   std::cout << "Vm output: " << res.r0 << std::endl;
   ASSERT_TRUE(res.r1);
 
-  res = VmCall(empty, inputCallSetter, caller, callee);
+  res = VmCall(empty, inputCallSetter, caller, callee, &executor);
   std::cout << "Vm output: " << res.r0 << std::endl;
   ASSERT_TRUE(res.r1);
 
-  res = VmCall(empty, inputCallGetter, caller, callee);
+  res = VmCall(empty, inputCallGetter, caller, callee, &executor);
   std::cout << "Vm output: " << res.r0 << std::endl;
   ASSERT_TRUE(res.r1);
 }

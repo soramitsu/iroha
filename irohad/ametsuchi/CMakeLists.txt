@@ -73,7 +73,7 @@ add_library(ametsuchi
     impl/in_memory_block_storage.cpp
     impl/in_memory_block_storage_factory.cpp
     impl/k_times_reconnection_strategy.cpp
-    vmCall.h
+    impl/proto_command_executor.cpp
     )
 
 add_library(vmCall STATIC IMPORTED GLOBAL)
