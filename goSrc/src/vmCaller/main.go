@@ -15,6 +15,8 @@ import (
 	"github.com/tmthrgd/go-hex"
 	"golang.org/x/crypto/ripemd160"
 )
+import "github.com/golang/protobuf/proto"
+import pb "iroha_protocol"
 
 type BalanceType = uint64
 
