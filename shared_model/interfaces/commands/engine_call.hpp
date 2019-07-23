@@ -9,7 +9,7 @@ namespace shared_model {
     /**
      * Smart contract code class
      */
-    class AddSmartContract : public ModelPrimitive<AddSmartContract> {
+    class EngineCall : public ModelPrimitive<EngineCall> {
       public:
 
         /**
