@@ -15,12 +15,24 @@ type IrohaAppState struct {
 }
 
 // check IrohaAppState implements acmstate.ReaderWriter
-var _ acmstate.ReaderWriter = (*IrohaAppState)(nil)
+var _ acmstate.ReaderWriter = &IrohaAppState{}
 
 func (ias *IrohaAppState) GetAccount(addr crypto.Address) (*acm.Account, error) {
 	fmt.Println("GetAccount: " + addr.String())
 	account := ias.accounts[addr]
 	return account, nil
+}
+
+// mock
+func (ias *IrohaAppState) GetMetadata(metahash acmstate.MetadataHash) (string, error) {
+	fmt.Println("GetMetadata: metahash" + metahash.String())
+	return "", nil
+}
+
+// mock
+func (ias *IrohaAppState) SetMetadata(metahash acmstate.MetadataHash, metadata string) error {
+	fmt.Println("SetMetadata: metahash" + metahash.String() + " metadata: " + metadata)
+	return nil
 }
 
 func (ias *IrohaAppState) UpdateAccount(account *acm.Account) error {
