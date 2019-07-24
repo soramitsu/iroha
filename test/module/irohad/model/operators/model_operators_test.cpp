@@ -8,7 +8,7 @@
 #include "model/commands/add_asset_quantity.hpp"
 #include "model/commands/add_peer.hpp"
 #include "model/commands/add_signatory.hpp"
-#include "model/commands/add_smart_contract.hpp"
+#include "model/commands/engine_call.hpp"
 #include "model/commands/append_role.hpp"
 #include "model/commands/create_account.hpp"
 #include "model/commands/create_asset.hpp"
@@ -102,20 +102,20 @@ TEST(ModelOperatorTest, AddSignatoryTest) {
   ASSERT_NE(first, second);
 }
 
-// -----|AddSmartContract|-----
+// -----|EngineCall|-----
 
-AddSmartContract createAddSmartContract() {
-  AddSmartContract add_smart_contract;
-  add_smart_contract.caller = "SomeAddr";
-  add_smart_contract.callee = "SomeAddr";
-  add_smart_contract.code = "C0De";
-  add_smart_contract.input = "";
-  return add_smart_contract;
+EngineCall createEngineCall() {
+  EngineCall engine_call;
+  engine_call.caller = "SomeAddr";
+  engine_call.callee = "SomeAddr";
+  engine_call.code = "C0De";
+  engine_call.input = "";
+  return engine_call;
 }
 
-TEST(ModelOperatorTest, AddSmartContract) {
-  auto first = createAddSmartContract();
-  auto second = createAddSmartContract();
+TEST(ModelOperatorTest, EngineCall) {
+  auto first = createEngineCall();
+  auto second = createEngineCall();
 
   ASSERT_EQ(first, second);
   second.code = "111C0de";

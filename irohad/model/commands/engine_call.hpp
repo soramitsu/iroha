@@ -9,7 +9,7 @@ namespace iroha {
     /**
      * Add smart contract to transaction
      */
-    struct AddSmartContract : public Command {
+    struct EngineCall : public Command {
 
       /*
        * Account of the caller 
@@ -39,7 +39,7 @@ namespace iroha {
 
       bool operator==(const Command &command) const override;
 
-      AddSmartContract() = default;
+      EngineCall() = default;
 
       /**
        * @param caller_account — account of the caller
@@ -47,7 +47,7 @@ namespace iroha {
        * @param code_of_smart_contract — smart contract code
        * @param input_func_and_data — input with encoded function and params
        */
-      AddSmartContract(
+      EngineCall(
         const std::string &caller_account,
         const std::string &callee_account,
         const std::string &code_of_smart_contract,

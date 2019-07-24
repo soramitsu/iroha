@@ -36,8 +36,8 @@ namespace iroha {
       }
 
       CommandResult operator()(
-          const shared_model::interface::AddSmartContract &command) override {
-        return doAddSmartContract(command);
+          const shared_model::interface::EngineCall &command) override {
+        return doEngineCall(command);
       }
 
       CommandResult operator()(
@@ -117,9 +117,8 @@ namespace iroha {
           doAddSignatory,
           CommandResult(const shared_model::interface::AddSignatory &));
 
-      MOCK_METHOD1(
-          doAddSmartContract,
-          CommandResult(const shared_model::interface::AddSmartContract &));
+      MOCK_METHOD1(doEngineCall,
+                   CommandResult(const shared_model::interface::EngineCall &));
 
       MOCK_METHOD1(doAppendRole,
                    CommandResult(const shared_model::interface::AppendRole &));

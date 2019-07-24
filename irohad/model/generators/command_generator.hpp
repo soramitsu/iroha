@@ -26,7 +26,7 @@ namespace iroha {
         std::shared_ptr<Command> generateAddSignatory(
             const std::string &account_id, const pubkey_t &key);
 
-        std::shared_ptr<Command> generateAddSmartContract(
+        std::shared_ptr<Command> generateEngineCall(
             const std::string &caller,
             const std::string &callee,
             const std::string &code,

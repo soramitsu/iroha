@@ -16,7 +16,7 @@ namespace shared_model {
     class AddAssetQuantity;
     class AddPeer;
     class AddSignatory;
-    class AddSmartContract;
+    class EngineCall;
     class AppendRole;
     class CreateAccount;
     class CreateAsset;
@@ -48,7 +48,7 @@ namespace shared_model {
       using CommandVariantType = wrap<AddAssetQuantity,
                                       AddPeer,
                                       AddSignatory,
-                                      AddSmartContract,
+                                      EngineCall,
                                       AppendRole,
                                       CreateAccount,
                                       CreateAsset,

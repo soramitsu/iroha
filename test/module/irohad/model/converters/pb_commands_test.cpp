@@ -8,7 +8,7 @@
 #include "model/commands/add_asset_quantity.hpp"
 #include "model/commands/add_peer.hpp"
 #include "model/commands/add_signatory.hpp"
-#include "model/commands/add_smart_contract.hpp"
+#include "model/commands/engine_call.hpp"
 #include "model/commands/append_role.hpp"
 #include "model/commands/create_account.hpp"
 #include "model/commands/create_asset.hpp"
@@ -106,11 +106,11 @@ TEST(CommandTest, add_signatory_abstract_factory) {
   command_converter_test(orig_command);
 }
 
-TEST(CommandTest, add_smart_contract) {
+TEST(CommandTest, engine_call) {
   auto factory = iroha::model::converters::PbCommandFactory();
-  auto orig_command = AddSmartContract("CppForever", "ZeroAddress", "caFe", "BaBE");
-  auto proto_command = factory.serializeAddSmartContract(orig_command);
-  auto serial_command = factory.deserializeAddSmartContract(proto_command);
+  auto orig_command = EngineCall("CppForever", "ZeroAddress", "caFe", "BaBE");
+  auto proto_command = factory.serializeEngineCall(orig_command);
+  auto serial_command = factory.deserializeEngineCall(proto_command);
   ASSERT_EQ(orig_command, serial_command);
   command_converter_test(orig_command);
 }

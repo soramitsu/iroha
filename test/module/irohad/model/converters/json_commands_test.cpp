@@ -10,7 +10,7 @@
 #include "model/commands/add_asset_quantity.hpp"
 #include "model/commands/add_peer.hpp"
 #include "model/commands/add_signatory.hpp"
-#include "model/commands/add_smart_contract.hpp"
+#include "model/commands/engine_call.hpp"
 #include "model/commands/append_role.hpp"
 #include "model/commands/create_account.hpp"
 #include "model/commands/create_asset.hpp"
@@ -52,7 +52,7 @@ TEST_F(JsonCommandTest, ClassHandlerTest) {
       std::make_shared<SubtractAssetQuantity>(),
       std::make_shared<AddPeer>(),
       std::make_shared<AddSignatory>(),
-      std::make_shared<AddSmartContract>(),
+      std::make_shared<EngineCall>(),
       std::make_shared<CreateAccount>(),
       std::make_shared<CreateAsset>("", "", 0),
       std::make_shared<CreateDomain>(),
@@ -161,14 +161,14 @@ TEST_F(JsonCommandTest, add_signatory_abstract_factory) {
   command_converter_test(orig_command);
 }
 
-TEST_F(JsonCommandTest, add_smart_contract) {
-  auto orig_command = std::make_shared<AddSmartContract>();
+TEST_F(JsonCommandTest, engine_call) {
+  auto orig_command = std::make_shared<EngineCall>();
   orig_command->caller = "";
   orig_command->callee = "Who is Callee?";
   orig_command->code = "beef"; // hex values
   orig_command->input = "BADF00D";
-  auto json_command = factory.serializeAddSmartContract(orig_command);
-  auto serial_command = factory.deserializeAddSmartContract(json_command);
+  auto json_command = factory.serializeEngineCall(orig_command);
+  auto serial_command = factory.deserializeEngineCall(json_command);
 
   ASSERT_TRUE(serial_command);
   ASSERT_EQ(*orig_command, **serial_command);

@@ -9,7 +9,7 @@
 #include "add_asset_quantity.hpp"
 #include "add_peer.hpp"
 #include "add_signatory.hpp"
-#include "add_smart_contract.hpp"
+#include "engine_call.hpp"
 #include "append_role.hpp"
 #include "create_account.hpp"
 #include "create_asset.hpp"

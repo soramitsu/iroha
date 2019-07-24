@@ -230,24 +230,24 @@ namespace iroha {
       }
 
       // add smart contract
-      protocol::AddSmartContract PbCommandFactory::serializeAddSmartContract(
-          const model::AddSmartContract &add_smart_contract) {
-        protocol::AddSmartContract pb_add_smart_contract;
-        pb_add_smart_contract.set_caller(add_smart_contract.caller);
-        pb_add_smart_contract.set_callee(add_smart_contract.callee);
-        pb_add_smart_contract.set_code(add_smart_contract.code);
-        pb_add_smart_contract.set_input(add_smart_contract.input);
-        return pb_add_smart_contract;
+      protocol::EngineCall PbCommandFactory::serializeEngineCall(
+          const model::EngineCall &engine_call) {
+        protocol::EngineCall pb_engine_call;
+        pb_engine_call.set_caller(engine_call.caller);
+        pb_engine_call.set_callee(engine_call.callee);
+        pb_engine_call.set_code(engine_call.code);
+        pb_engine_call.set_input(engine_call.input);
+        return pb_engine_call;
       }
 
-       model::AddSmartContract PbCommandFactory::deserializeAddSmartContract(
-          const protocol::AddSmartContract &pb_add_smart_contract) {
-        model::AddSmartContract add_smart_contract;
-        add_smart_contract.caller = pb_add_smart_contract.caller();
-        add_smart_contract.callee = pb_add_smart_contract.callee();
-        add_smart_contract.code = pb_add_smart_contract.code();
-        add_smart_contract.input = pb_add_smart_contract.input();
-        return add_smart_contract;
+       model::EngineCall PbCommandFactory::deserializeEngineCall(
+          const protocol::EngineCall &pb_engine_call) {
+        model::EngineCall engine_call;
+        engine_call.caller = pb_engine_call.caller();
+        engine_call.callee = pb_engine_call.callee();
+        engine_call.code = pb_engine_call.code();
+        engine_call.input = pb_engine_call.input();
+        return engine_call;
       }
 
       // create asset
@@ -551,12 +551,12 @@ namespace iroha {
               new protocol::AddSignatory(serialized));
         }
 
-        // -----|AddSmartContract|-----
-        if (instanceof <model::AddSmartContract>(command)) {
-          auto serialized = commandFactory.serializeAddSmartContract(
-              static_cast<const model::AddSmartContract &>(command));
-          cmd.set_allocated_add_smart_contract(
-              new protocol::AddSmartContract(serialized));
+        // -----|EngineCall|-----
+        if (instanceof <model::EngineCall>(command)) {
+          auto serialized = commandFactory.serializeEngineCall(
+              static_cast<const model::EngineCall &>(command));
+          cmd.set_allocated_engine_call(
+              new protocol::EngineCall(serialized));
         }
 
         // -----|CreateAsset|-----
@@ -687,11 +687,11 @@ namespace iroha {
           val = std::make_shared<model::AddSignatory>(cmd);
         }
 
-        // -----|AddSmartContract|-----
-        if (command.has_add_smart_contract()) {
-          auto pb_command = command.add_smart_contract();
-          auto cmd = commandFactory.deserializeAddSmartContract(pb_command);
-          val = std::make_shared<model::AddSmartContract>(cmd);
+        // -----|EngineCall|-----
+        if (command.has_engine_call()) {
+          auto pb_command = command.engine_call();
+          auto cmd = commandFactory.deserializeEngineCall(pb_command);
+          val = std::make_shared<model::EngineCall>(cmd);
         }
 
         // -----|CreateAsset|-----

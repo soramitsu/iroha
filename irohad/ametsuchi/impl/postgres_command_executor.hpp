@@ -41,7 +41,7 @@ namespace iroha {
           const shared_model::interface::AddSignatory &command) override;
 
       CommandResult operator()(
-          const shared_model::interface::AddSmartContract &command) override;
+          const shared_model::interface::EngineCall &command) override;
 
       CommandResult operator()(
           const shared_model::interface::AppendRole &command) override;

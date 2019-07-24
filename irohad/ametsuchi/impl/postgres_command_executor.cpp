@@ -13,7 +13,7 @@
 #include "interfaces/commands/add_asset_quantity.hpp"
 #include "interfaces/commands/add_peer.hpp"
 #include "interfaces/commands/add_signatory.hpp"
-#include "interfaces/commands/add_smart_contract.hpp"
+#include "interfaces/commands/engine_call.hpp"
 #include "interfaces/commands/append_role.hpp"
 #include "interfaces/commands/compare_and_set_account_detail.hpp"
 #include "interfaces/commands/create_account.hpp"
@@ -987,7 +987,7 @@ namespace iroha {
     }
 
     CommandResult PostgresCommandExecutor::operator()(
-        const shared_model::interface::AddSmartContract &command) {
+        const shared_model::interface::EngineCall &command) {
       // need to use const cast to call vm
       // inside VmCall this strings are not modified
       char *caller = const_cast<char *>(command.caller().c_str());

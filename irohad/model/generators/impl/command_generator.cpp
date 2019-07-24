@@ -7,7 +7,7 @@
 #include "model/commands/add_asset_quantity.hpp"
 #include "model/commands/add_peer.hpp"
 #include "model/commands/add_signatory.hpp"
-#include "model/commands/add_smart_contract.hpp"
+#include "model/commands/engine_call.hpp"
 #include "model/commands/append_role.hpp"
 #include "model/commands/create_account.hpp"
 #include "model/commands/create_asset.hpp"
@@ -37,12 +37,12 @@ namespace iroha {
         return generateCommand<AddSignatory>(account_id, key);
       }
 
-      std::shared_ptr<Command> CommandGenerator::generateAddSmartContract(
+      std::shared_ptr<Command> CommandGenerator::generateEngineCall(
             const std::string &caller,
             const std::string &callee,
             const std::string &code,
             const std::string &input) {
-        return generateCommand<AddSmartContract>(caller, callee, code, input);
+        return generateCommand<EngineCall>(caller, callee, code, input);
       }
 
       std::shared_ptr<Command> CommandGenerator::generateRemoveSignatory(

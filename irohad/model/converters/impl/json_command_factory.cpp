@@ -10,7 +10,7 @@
 #include "model/commands/add_asset_quantity.hpp"
 #include "model/commands/add_peer.hpp"
 #include "model/commands/add_signatory.hpp"
-#include "model/commands/add_smart_contract.hpp"
+#include "model/commands/engine_call.hpp"
 #include "model/commands/append_role.hpp"
 #include "model/commands/create_account.hpp"
 #include "model/commands/create_asset.hpp"
@@ -57,7 +57,7 @@ namespace iroha {
              &JsonCommandFactory::serializeSubtractAssetQuantity},
             {typeid(AddPeer), &JsonCommandFactory::serializeAddPeer},
             {typeid(AddSignatory), &JsonCommandFactory::serializeAddSignatory},
-            {typeid(AddSmartContract), &JsonCommandFactory::serializeAddSmartContract},
+            {typeid(EngineCall), &JsonCommandFactory::serializeEngineCall},
             {typeid(CreateAccount),
              &JsonCommandFactory::serializeCreateAccount},
             {typeid(CreateAsset), &JsonCommandFactory::serializeCreateAsset},
@@ -84,7 +84,7 @@ namespace iroha {
              &JsonCommandFactory::deserializeSubtractAssetQuantity},
             {"AddPeer", &JsonCommandFactory::deserializeAddPeer},
             {"AddSignatory", &JsonCommandFactory::deserializeAddSignatory},
-            {"AddSmartContract", &JsonCommandFactory::deserializeAddSmartContract},
+            {"EngineCall", &JsonCommandFactory::deserializeEngineCall},
             {"CreateAccount", &JsonCommandFactory::deserializeCreateAccount},
             {"CreateAsset", &JsonCommandFactory::deserializeCreateAsset},
             {"CreateDomain", &JsonCommandFactory::deserializeCreateDomain},
@@ -181,32 +181,32 @@ namespace iroha {
             | des.String(&AddSignatory::pubkey, "pubkey") | toCommand;
       }
 
-      // AddSmartContract
-      Document JsonCommandFactory::serializeAddSmartContract(
+      // EngineCall
+      Document JsonCommandFactory::serializeEngineCall(
           std::shared_ptr<Command> command) {
-        auto add_smart_contract = static_cast<AddSmartContract *>(command.get());
+        auto engine_call = static_cast<EngineCall *>(command.get());
 
         Document document;
         auto &allocator = document.GetAllocator();
 
         document.SetObject();
-        document.AddMember("command_type", "AddSmartContract", allocator);
-        document.AddMember("caller", add_smart_contract->caller, allocator);
-        document.AddMember("callee", add_smart_contract->callee, allocator);
-        document.AddMember("code", add_smart_contract->code, allocator);
-        document.AddMember("input", add_smart_contract->input, allocator);
+        document.AddMember("command_type", "EngineCall", allocator);
+        document.AddMember("caller", engine_call->caller, allocator);
+        document.AddMember("callee", engine_call->callee, allocator);
+        document.AddMember("code", engine_call->code, allocator);
+        document.AddMember("input", engine_call->input, allocator);
 
         return document;
       }
 
-       optional_ptr<Command> JsonCommandFactory::deserializeAddSmartContract(
+       optional_ptr<Command> JsonCommandFactory::deserializeEngineCall(
           const Value &document) {
         auto des = makeFieldDeserializer(document);
-        return make_optional_ptr<AddSmartContract>()
-            | des.String(&AddSmartContract::caller, "caller")
-            | des.String(&AddSmartContract::callee, "callee")
-            | des.String(&AddSmartContract::code, "code")
-            | des.String(&AddSmartContract::input, "input")
+        return make_optional_ptr<EngineCall>()
+            | des.String(&EngineCall::caller, "caller")
+            | des.String(&EngineCall::callee, "callee")
+            | des.String(&EngineCall::code, "code")
+            | des.String(&EngineCall::input, "input")
             | toCommand;
       }
 
