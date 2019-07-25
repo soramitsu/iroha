@@ -13,7 +13,6 @@
 #include "interfaces/commands/add_asset_quantity.hpp"
 #include "interfaces/commands/add_peer.hpp"
 #include "interfaces/commands/add_signatory.hpp"
-#include "interfaces/commands/engine_call.hpp"
 #include "interfaces/commands/append_role.hpp"
 #include "interfaces/commands/compare_and_set_account_detail.hpp"
 #include "interfaces/commands/create_account.hpp"
@@ -21,6 +20,7 @@
 #include "interfaces/commands/create_domain.hpp"
 #include "interfaces/commands/create_role.hpp"
 #include "interfaces/commands/detach_role.hpp"
+#include "interfaces/commands/engine_call.hpp"
 #include "interfaces/commands/grant_permission.hpp"
 #include "interfaces/commands/remove_peer.hpp"
 #include "interfaces/commands/remove_signatory.hpp"
@@ -1003,17 +1003,7 @@ namespace iroha {
         });
       }
 
-      // TODO(IvanTyulyandin): return vm output after call
-      /*
-            char input2[] =
-         "ee919d500000000000000000000000000000000000000000000000000000000000000001";
-            char code2[] = "";
-            res = VmCall(code2, input2, caller, callee);
-            if (res.r1 == 0) {
-              return makeCommandError("ADD SMART CONTRACT FAILED 2", 5,
-         [](){return "ADD SMART CONTRACT 2";});
-            }
-      */
+      // TODO(IvanTyulyandin): store vm output after call
       return {};
     }
 
