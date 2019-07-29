@@ -52,8 +52,22 @@ target_compile_definitions(postgres_storage
     PRIVATE SOCI_USE_BOOST HAVE_BOOST
     )
 
-add_library(ametsuchi
+add_library(command_executor
     impl/command_executor.cpp
+    )
+target_link_libraries(command_executor
+    common
+    )
+
+add_library(proto_command_executor
+    impl/proto_command_executor.cpp
+    )
+target_link_libraries(proto_command_executor
+    command_executor
+    shared_model_proto_backend
+    )
+
+add_library(ametsuchi
     impl/tx_executor.cpp
     impl/storage_impl.cpp
     impl/temporary_wsv_impl.cpp
@@ -73,11 +87,13 @@ add_library(ametsuchi
     impl/in_memory_block_storage.cpp
     impl/in_memory_block_storage_factory.cpp
     impl/k_times_reconnection_strategy.cpp
-    impl/proto_command_executor.cpp
     )
 
 add_library(vmCall STATIC IMPORTED GLOBAL)
 set_property(TARGET vmCall PROPERTY IMPORTED_LOCATION "${PROJECT_SOURCE_DIR}/irohad/ametsuchi/vmCall.a")
+target_link_libraries(vmCall INTERFACE
+    proto_command_executor
+    )
 
 target_link_libraries(ametsuchi
     pg_connection_init
@@ -95,6 +111,7 @@ target_link_libraries(ametsuchi
     SOCI::postgresql
     SOCI::core
     vmCall
+    command_executor
     )
 
 target_compile_definitions(ametsuchi
