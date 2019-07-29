@@ -10,6 +10,7 @@
 #include "interfaces/commands/add_peer.hpp"
 #include "interfaces/commands/add_signatory.hpp"
 #include "interfaces/commands/append_role.hpp"
+#include "interfaces/commands/compare_and_set_account_detail.hpp"
 #include "interfaces/commands/create_account.hpp"
 #include "interfaces/commands/create_asset.hpp"
 #include "interfaces/commands/create_domain.hpp"
@@ -17,6 +18,7 @@
 #include "interfaces/commands/detach_role.hpp"
 #include "interfaces/commands/engine_call.hpp"
 #include "interfaces/commands/grant_permission.hpp"
+#include "interfaces/commands/remove_peer.hpp"
 #include "interfaces/commands/remove_signatory.hpp"
 #include "interfaces/commands/revoke_permission.hpp"
 #include "interfaces/commands/set_account_detail.hpp"
@@ -72,9 +74,7 @@ contract C {
        *callee = const_cast<char *>("Callee"), *empty = const_cast<char *>("");
 
   iroha::ametsuchi::MockCommandExecutor executor;
-  EXPECT_CALL(
-      executor,
-      visit(::testing::A<const shared_model::interface::CreateAccount &>()))
+  EXPECT_CALL(executor, doCreateAccount(::testing::_))
       .WillRepeatedly(::testing::Return(iroha::expected::Value<void>({})));
 
   auto res = VmCall(code, empty, caller, callee, &executor);

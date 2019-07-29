@@ -106,6 +106,17 @@ namespace iroha {
         return doTransferAsset(command);
       }
 
+      CommandResult operator()(
+          const shared_model::interface::RemovePeer &command) override {
+        return doRemovePeer(command);
+      }
+
+      CommandResult operator()(
+          const shared_model::interface::CompareAndSetAccountDetail &command)
+          override {
+        return doCompareAndSetAccountDetail(command);
+      }
+
       MOCK_METHOD1(
           doAddAssetQuantity,
           CommandResult(const shared_model::interface::AddAssetQuantity &));
@@ -166,6 +177,14 @@ namespace iroha {
       MOCK_METHOD1(
           doTransferAsset,
           CommandResult(const shared_model::interface::TransferAsset &));
+
+      MOCK_METHOD1(doRemovePeer,
+                   CommandResult(const shared_model::interface::RemovePeer &));
+
+      MOCK_METHOD1(
+          doCompareAndSetAccountDetail,
+          CommandResult(
+              const shared_model::interface::CompareAndSetAccountDetail &));
     };
 
   }  // namespace ametsuchi
