@@ -36,7 +36,7 @@ namespace iroha {
    */
   inline boost::optional<std::string> hexstringToBytestring(
       const std::string &str) {
-    if (str.empty() or str.size() % 2 != 0) {
+    if (str.size() % 2 != 0) {
       return boost::none;
     }
     std::string result(str.size() / 2, 0);
