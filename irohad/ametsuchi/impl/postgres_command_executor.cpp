@@ -1461,7 +1461,7 @@ namespace iroha {
       char *callee = const_cast<char *>(command.callee().c_str());
       char *code = const_cast<char *>(command.code().c_str());
       char *input = const_cast<char *>(command.input().c_str());
-      VmCall_return res = VmCall(code, input, caller, callee, nullptr);
+      VmCall_return res = VmCall(code, input, caller, callee, nullptr, nullptr);
       if (res.r1 == 0) {
         // TODO(IvanTyulyandin): need to set appropriate error value, 5 used to
         // pass compilation
