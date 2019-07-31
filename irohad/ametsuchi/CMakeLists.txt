@@ -78,6 +78,7 @@ add_library(postgres_query_executor
     )
 target_link_libraries(postgres_query_executor
     SOCI::core
+    logger
     )
 target_compile_definitions(postgres_query_executor
     PRIVATE SOCI_USE_BOOST HAVE_BOOST
