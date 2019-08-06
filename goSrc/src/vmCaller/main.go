@@ -40,6 +40,10 @@ var burrowEVM = evm.NewVM(newParams(), crypto.ZeroAddress, nil, logging.NewNoopL
 //export VmCall
 func VmCall(code, input, caller, callee *C.char, commandExecutor unsafe.Pointer, queryExecutor unsafe.Pointer) (*C.char, bool) {
 
+	// Update executors
+	appState.commandExecutor = commandExecutor
+	appState.queryExecutor = queryExecutor
+
 	// The wrapper for EVM state.
 	// Contains real application state (here it is the appState) and it's cache.
 	// Since Iroha state changes are possible between VmCall invocations,
