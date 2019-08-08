@@ -56,6 +56,7 @@ namespace iroha {
         auto block_storage_factory =
             std::make_unique<InMemoryBlockStorageFactory>();
         auto block_storage = block_storage_factory->create();
+        block_storage_ = block_storage.get();
 
         reconnection_strategy_factory_ = std::make_unique<
             iroha::ametsuchi::KTimesReconnectionStrategyFactory>(0);
@@ -161,6 +162,7 @@ namespace iroha {
       static logger::LoggerPtr storage_logger_;
       static std::shared_ptr<StorageImpl> storage;
       static std::shared_ptr<CommandExecutor> command_executor;
+      static BlockStorage *block_storage_;
       static std::unique_ptr<framework::ametsuchi::SqlQuery> sql_query;
 
       static std::shared_ptr<shared_model::interface::PermissionToString>
@@ -221,6 +223,7 @@ namespace iroha {
         getTestLoggerManager()->getChild("Storage")->getLogger();
     std::shared_ptr<StorageImpl> AmetsuchiTest::storage = nullptr;
     std::shared_ptr<CommandExecutor> AmetsuchiTest::command_executor = nullptr;
+    BlockStorage *AmetsuchiTest::block_storage_ = nullptr;
     std::unique_ptr<framework::ametsuchi::SqlQuery> AmetsuchiTest::sql_query =
         nullptr;
   }  // namespace ametsuchi

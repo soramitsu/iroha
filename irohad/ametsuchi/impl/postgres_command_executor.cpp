@@ -1357,8 +1357,11 @@ namespace iroha {
     PostgresCommandExecutor::PostgresCommandExecutor(
         std::unique_ptr<soci::session> sql,
         std::shared_ptr<shared_model::interface::PermissionToString>
-            perm_converter)
-        : sql_(std::move(sql)), perm_converter_{std::move(perm_converter)} {
+            perm_converter,
+        std::shared_ptr<PostgresSpecificQueryExecutor> specific_query_executor)
+        : sql_(std::move(sql)),
+          perm_converter_{std::move(perm_converter)},
+          specific_query_executor_{std::move(specific_query_executor)} {
       initStatements();
     }
 
@@ -1461,7 +1464,8 @@ namespace iroha {
       char *callee = const_cast<char *>(command.callee().c_str());
       char *code = const_cast<char *>(command.code().c_str());
       char *input = const_cast<char *>(command.input().c_str());
-      VmCall_return res = VmCall(code, input, caller, callee, nullptr, nullptr);
+      VmCall_return res = VmCall(
+          code, input, caller, callee, this, specific_query_executor_.get());
       if (res.r1 == 0) {
         // TODO(IvanTyulyandin): need to set appropriate error value, 5 used to
         // pass compilation

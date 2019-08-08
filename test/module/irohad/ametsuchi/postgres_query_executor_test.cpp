@@ -20,6 +20,7 @@
 #include <boost/range/size.hpp>
 #include "ametsuchi/impl/flat_file/flat_file.hpp"
 #include "ametsuchi/impl/postgres_command_executor.hpp"
+#include "ametsuchi/impl/postgres_specific_query_executor.hpp"
 #include "ametsuchi/impl/postgres_wsv_query.hpp"
 #include "ametsuchi/mutable_storage.hpp"
 #include "backend/plain/peer.hpp"
@@ -161,11 +162,20 @@ namespace iroha {
                 shared_model::validation::FieldValidator>>(
                 iroha::test::kTestsValidatorsConfig);
         query_executor = storage;
+        pending_txs_storage = std::make_shared<MockPendingTransactionStorage>();
         executor = std::make_unique<PostgresCommandExecutor>(
             std::make_unique<soci::session>(*soci::factory_postgresql(),
                                             pgopt_),
-            perm_converter);
-        pending_txs_storage = std::make_shared<MockPendingTransactionStorage>();
+            perm_converter,
+            std::make_shared<PostgresSpecificQueryExecutor>(
+                *sql,
+                *block_storage_,
+                pending_txs_storage,
+                query_response_factory,
+                perm_converter,
+                getTestLoggerManager()
+                    ->getChild("SpecificQueryExecutor")
+                    ->getLogger()));
 
         execute(
             *mock_command_factory->constructCreateRole(role, role_permissions),
