@@ -108,11 +108,7 @@ add_library(ametsuchi
     impl/postgres_indexer.cpp
     impl/postgres_block_index.cpp
     impl/wsv_restorer_impl.cpp
-<<<<<<< HEAD
     impl/postgres_options.cpp
-=======
-    impl/postgres_query_executor.cpp
->>>>>>> master
     impl/postgres_specific_query_executor.cpp
     impl/tx_presence_cache_impl.cpp
     impl/in_memory_block_storage.cpp
