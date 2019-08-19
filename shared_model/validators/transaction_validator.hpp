@@ -8,7 +8,7 @@
 
 #include <boost/format.hpp>
 #include <boost/variant.hpp>
-
+#include "common/bind.hpp"
 #include "interfaces/commands/add_asset_quantity.hpp"
 #include "interfaces/commands/add_peer.hpp"
 #include "interfaces/commands/add_signatory.hpp"
@@ -36,6 +36,8 @@
 
 namespace shared_model {
   namespace validation {
+
+    struct ValidatorsConfig;
 
     /**
      * Visitor used by transaction validator to validate each command
@@ -91,7 +93,7 @@ namespace shared_model {
         ReasonsGroupType reason;
         addInvalidCommand(reason, "EngineCall");
 
-         // TODO(IvanTyulyandin): these functions are mocks
+        // TODO(IvanTyulyandin): these functions are mocks
         validator_.validateCaller(reason, asc.caller());
         validator_.validateCallee(reason, asc.callee());
         validator_.validateCode(reason, asc.code());
