@@ -100,19 +100,6 @@ namespace shared_model {
       }
     }
 
-    void FieldValidator::validateCaller(
-        ReasonsGroupType &reason,
-        const interface::types::AccountIdType &caller) const {
-      // TODO(IvanTyulyandin): add caller validator
-      // this is mock for tests to be passed
-      // consider accountId validation method to call
-      if (caller.empty()) {
-        auto message =
-            boost::format("Smart contract caller should be specified").str();
-        reason.second.push_back(std::move(message));
-      }
-    }
-
     void FieldValidator::validateCallee(
         ReasonsGroupType &reason,
         const interface::types::AccountIdType &callee) const {
@@ -126,19 +113,6 @@ namespace shared_model {
       }
     }
 
-    void FieldValidator::validateCode(
-        ReasonsGroupType &reason,
-        const interface::types::SmartContractCodeType &code) const {
-      // TODO(IvanTyulyandin): add code validator
-      // this is mock for tests to be passed
-      if (not std::regex_match(code, bytecode_regex_)) {
-        auto message =
-            boost::format("Smart contract code size must be a hex bytecode")
-                .str();
-        reason.second.push_back(std::move(message));
-      }
-    }
-
     void FieldValidator::validateInput(
         ReasonsGroupType &reason,
         const interface::types::SmartContractCodeType &input) const {
@@ -146,7 +120,7 @@ namespace shared_model {
       // this is mock for tests to be passed
       if (not std::regex_match(input, bytecode_regex_)) {
         auto message =
-            boost::format("Smart contract input size must be a hex bytecode")
+            boost::format("Engine_Call input parameter must be a hex bytecode")
                 .str();
         reason.second.push_back(std::move(message));
       }

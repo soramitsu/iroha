@@ -1459,13 +1459,13 @@ namespace iroha {
         const shared_model::interface::types::AccountIdType &creator_account_id,
         bool do_validation) {
       // need to use const cast to call vm
-      // inside VmCall this strings are not modified
-      char *caller = const_cast<char *>(command.caller().c_str());
+      // inside VmCall this strings are copied
+      // and source data is not modified
+      char *caller = const_cast<char *>(creator_account_id.c_str());
       char *callee = const_cast<char *>(command.callee().c_str());
-      char *code = const_cast<char *>(command.code().c_str());
       char *input = const_cast<char *>(command.input().c_str());
       VmCall_return res = VmCall(
-          code, input, caller, callee, this, specific_query_executor_.get());
+          input, caller, callee, this, specific_query_executor_.get());
       if (res.r1 == 0) {
         // TODO(IvanTyulyandin): need to set appropriate error value, 5 used to
         // pass compilation
