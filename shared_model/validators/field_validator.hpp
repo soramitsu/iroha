@@ -50,14 +50,8 @@ namespace shared_model {
       void validateAssetId(ReasonsGroupType &reason,
                            const interface::types::AssetIdType &asset_id) const;
 
-      void validateCaller(ReasonsGroupType &reason,
-                          const interface::types::AccountIdType &caller) const;
-
       void validateCallee(ReasonsGroupType &reason,
                           const interface::types::AccountIdType &callee) const;
-
-      void validateCode(ReasonsGroupType &reason,
-                        const interface::types::SmartContractCodeType &code) const;
 
       void validateInput(ReasonsGroupType &reason,
                         const interface::types::SmartContractCodeType &input) const;

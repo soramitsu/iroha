@@ -94,9 +94,7 @@ namespace shared_model {
         addInvalidCommand(reason, "EngineCall");
 
         // TODO(IvanTyulyandin): these functions are mocks
-        validator_.validateCaller(reason, asc.caller());
         validator_.validateCallee(reason, asc.callee());
-        validator_.validateCode(reason, asc.code());
         validator_.validateInput(reason, asc.input());
         return reason;
       }
