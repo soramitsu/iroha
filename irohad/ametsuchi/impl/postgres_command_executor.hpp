@@ -55,10 +55,13 @@ namespace iroha {
 
       ~PostgresCommandExecutor();
 
-      CommandResult execute(const shared_model::interface::Command &cmd,
-                            const shared_model::interface::types::AccountIdType
-                                &creator_account_id,
-                            bool do_validation) override;
+      CommandResult execute(
+          const shared_model::interface::Command &cmd,
+          const shared_model::interface::types::AccountIdType
+              &creator_account_id,
+          const std::string &tx_hash,
+          shared_model::interface::types::CommandIndexType cmd_index,
+          bool do_validation) override;
 
       soci::session &getSession();
 
@@ -66,114 +69,152 @@ namespace iroha {
           const shared_model::interface::AddAssetQuantity &command,
           const shared_model::interface::types::AccountIdType
               &creator_account_id,
+          const std::string &tx_hash,
+          shared_model::interface::types::CommandIndexType cmd_index,
           bool do_validation);
 
       CommandResult operator()(
           const shared_model::interface::AddPeer &command,
           const shared_model::interface::types::AccountIdType
               &creator_account_id,
+          const std::string &tx_hash,
+          shared_model::interface::types::CommandIndexType cmd_index,
           bool do_validation);
 
       CommandResult operator()(
           const shared_model::interface::AddSignatory &command,
           const shared_model::interface::types::AccountIdType
               &creator_account_id,
+          const std::string &tx_hash,
+          shared_model::interface::types::CommandIndexType cmd_index,
           bool do_validation);
 
       CommandResult operator()(
           const shared_model::interface::EngineCall &command,
           const shared_model::interface::types::AccountIdType
               &creator_account_id,
+          const std::string &tx_hash,
+          shared_model::interface::types::CommandIndexType cmd_index,
           bool do_validation);
 
       CommandResult operator()(
           const shared_model::interface::AppendRole &command,
           const shared_model::interface::types::AccountIdType
               &creator_account_id,
+          const std::string &tx_hash,
+          shared_model::interface::types::CommandIndexType cmd_index,
           bool do_validation);
 
       CommandResult operator()(
           const shared_model::interface::CompareAndSetAccountDetail &command,
           const shared_model::interface::types::AccountIdType
               &creator_account_id,
+          const std::string &tx_hash,
+          shared_model::interface::types::CommandIndexType cmd_index,
           bool do_validation);
 
       CommandResult operator()(
           const shared_model::interface::CreateAccount &command,
           const shared_model::interface::types::AccountIdType
               &creator_account_id,
+          const std::string &tx_hash,
+          shared_model::interface::types::CommandIndexType cmd_index,
           bool do_validation);
 
       CommandResult operator()(
           const shared_model::interface::CreateAsset &command,
           const shared_model::interface::types::AccountIdType
               &creator_account_id,
+          const std::string &tx_hash,
+          shared_model::interface::types::CommandIndexType cmd_index,
           bool do_validation);
 
       CommandResult operator()(
           const shared_model::interface::CreateDomain &command,
           const shared_model::interface::types::AccountIdType
               &creator_account_id,
+          const std::string &tx_hash,
+          shared_model::interface::types::CommandIndexType cmd_index,
           bool do_validation);
 
       CommandResult operator()(
           const shared_model::interface::CreateRole &command,
           const shared_model::interface::types::AccountIdType
               &creator_account_id,
+          const std::string &tx_hash,
+          shared_model::interface::types::CommandIndexType cmd_index,
           bool do_validation);
 
       CommandResult operator()(
           const shared_model::interface::DetachRole &command,
           const shared_model::interface::types::AccountIdType
               &creator_account_id,
+          const std::string &tx_hash,
+          shared_model::interface::types::CommandIndexType cmd_index,
           bool do_validation);
 
       CommandResult operator()(
           const shared_model::interface::GrantPermission &command,
           const shared_model::interface::types::AccountIdType
               &creator_account_id,
+          const std::string &tx_hash,
+          shared_model::interface::types::CommandIndexType cmd_index,
           bool do_validation);
 
       CommandResult operator()(
           const shared_model::interface::RemovePeer &command,
           const shared_model::interface::types::AccountIdType
               &creator_account_id,
+          const std::string &tx_hash,
+          shared_model::interface::types::CommandIndexType cmd_index,
           bool do_validation);
 
       CommandResult operator()(
           const shared_model::interface::RemoveSignatory &command,
           const shared_model::interface::types::AccountIdType
               &creator_account_id,
+          const std::string &tx_hash,
+          shared_model::interface::types::CommandIndexType cmd_index,
           bool do_validation);
 
       CommandResult operator()(
           const shared_model::interface::RevokePermission &command,
           const shared_model::interface::types::AccountIdType
               &creator_account_id,
+          const std::string &tx_hash,
+          shared_model::interface::types::CommandIndexType cmd_index,
           bool do_validation);
 
       CommandResult operator()(
           const shared_model::interface::SetAccountDetail &command,
           const shared_model::interface::types::AccountIdType
               &creator_account_id,
+          const std::string &tx_hash,
+          shared_model::interface::types::CommandIndexType cmd_index,
           bool do_validation);
 
       CommandResult operator()(
           const shared_model::interface::SetQuorum &command,
           const shared_model::interface::types::AccountIdType
               &creator_account_id,
+          const std::string &tx_hash,
+          shared_model::interface::types::CommandIndexType cmd_index,
           bool do_validation);
 
       CommandResult operator()(
           const shared_model::interface::SubtractAssetQuantity &command,
           const shared_model::interface::types::AccountIdType
               &creator_account_id,
+          const std::string &tx_hash,
+          shared_model::interface::types::CommandIndexType cmd_index,
           bool do_validation);
 
       CommandResult operator()(
           const shared_model::interface::TransferAsset &command,
           const shared_model::interface::types::AccountIdType
               &creator_account_id,
+          const std::string &tx_hash,
+          shared_model::interface::types::CommandIndexType cmd_index,
           bool do_validation);
 
      private:
@@ -210,6 +251,7 @@ namespace iroha {
       std::unique_ptr<CommandStatements> revoke_permission_statements_;
       std::unique_ptr<CommandStatements> set_account_detail_statements_;
       std::unique_ptr<CommandStatements> set_quorum_statements_;
+      std::unique_ptr<CommandStatements> store_engine_response_statements_;
       std::unique_ptr<CommandStatements> subtract_asset_quantity_statements_;
       std::unique_ptr<CommandStatements> transfer_asset_statements_;
     };

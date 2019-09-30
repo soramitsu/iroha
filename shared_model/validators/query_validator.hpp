@@ -22,6 +22,7 @@
 #include "backend/protobuf/queries/proto_get_transactions.hpp"
 #include "backend/protobuf/queries/proto_query.hpp"
 #include "common/bind.hpp"
+#include "interfaces/queries/get_engine_response.hpp"
 #include "interfaces/queries/tx_pagination_meta.hpp"
 #include "validators/abstract_validator.hpp"
 #include "validators/answer.hpp"
@@ -186,6 +187,16 @@ namespace shared_model {
       ReasonsGroupType operator()(const interface::GetPeers &qry) const {
         ReasonsGroupType reason;
         reason.first = "GetPeers";
+
+        return reason;
+      }
+
+      ReasonsGroupType operator()(
+          const interface::GetEngineResponse &qry) const {
+        ReasonsGroupType reason;
+        reason.first = "GetEngineResponse";
+
+        validator_.validateHash(reason, qry.txHash());
 
         return reason;
       }

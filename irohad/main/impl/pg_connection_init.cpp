@@ -305,7 +305,13 @@ CREATE INDEX IF NOT EXISTS position_by_account_asset_index
   ON position_by_account_asset
   USING btree
   (account_id, asset_id, height, index ASC);
-  )";
+CREATE TABLE IF NOT EXISTS engine_response_records (
+    creator_id text,
+    tx_hash text,
+    cmd_index bigint,
+    engine_response text,
+    PRIMARY KEY (creator_id, tx_hash, cmd_index)
+);)";
   session << prepare_tables_sql;
 }
 
@@ -328,6 +334,7 @@ iroha::expected::Result<void, std::string> PgConnectionInit::resetWsv(
       TRUNCATE TABLE tx_status_by_hash RESTART IDENTITY CASCADE;
       TRUNCATE TABLE tx_position_by_creator RESTART IDENTITY CASCADE;
       TRUNCATE TABLE position_by_account_asset RESTART IDENTITY CASCADE;
+      TRUNCATE TABLE engine_response_records RESTART IDENTITY CASCADE;
     )";
     sql << reset;
   } catch (std::exception &e) {

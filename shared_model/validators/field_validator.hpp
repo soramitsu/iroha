@@ -39,11 +39,10 @@ namespace shared_model {
      public:
       // todo igor-egorov 05.04.2018 IR-439 Remove ValidatorsConfig from
       // FieldValidator
-      FieldValidator(std::shared_ptr<ValidatorsConfig> config,
-                     time_t future_gap = kDefaultFutureGap,
-                     TimeFunction time_provider = [] {
-                       return iroha::time::now();
-                     });
+      FieldValidator(
+          std::shared_ptr<ValidatorsConfig> config,
+          time_t future_gap = kDefaultFutureGap,
+          TimeFunction time_provider = [] { return iroha::time::now(); });
 
       void validateAccountId(
           ReasonsGroupType &reason,
@@ -55,8 +54,9 @@ namespace shared_model {
       void validateCallee(ReasonsGroupType &reason,
                           const interface::types::AccountIdType &callee) const;
 
-      void validateInput(ReasonsGroupType &reason,
-                        const interface::types::SmartContractCodeType &input) const;
+      void validateInput(
+          ReasonsGroupType &reason,
+          const interface::types::SmartContractCodeType &input) const;
 
       void validatePeer(ReasonsGroupType &reason,
                         const interface::Peer &peer) const;
@@ -176,6 +176,9 @@ namespace shared_model {
                           const interface::types::HeightType &height) const;
 
       void validateHash(ReasonsGroupType &reason,
+                        const std::string &hash) const;
+
+      void validateHash(ReasonsGroupType &reason,
                         const crypto::Hash &hash) const;
 
       void validateTxPaginationMeta(
@@ -200,7 +203,7 @@ namespace shared_model {
       const static std::string asset_id_pattern_;
       const static std::string detail_key_pattern_;
       const static std::string role_id_pattern_;
-      const static std::string bytecode_pattern_;
+      const static std::string hex_pattern_;
 
       const static std::regex account_name_regex_;
       const static std::regex asset_name_regex_;
@@ -211,7 +214,7 @@ namespace shared_model {
       const static std::regex asset_id_regex_;
       const static std::regex detail_key_regex_;
       const static std::regex role_id_regex_;
-      const static std::regex bytecode_regex_;
+      const static std::regex hex_regex_;
 
       // gap for future transactions
       time_t future_gap_;
@@ -229,7 +232,7 @@ namespace shared_model {
       // size of key
       static const size_t public_key_size;
       static const size_t signature_size;
-      static const size_t hash_size;
+      static const size_t kHashSize;
       static const size_t value_size;
       static const size_t description_size;
     };

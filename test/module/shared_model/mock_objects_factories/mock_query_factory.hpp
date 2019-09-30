@@ -66,6 +66,9 @@ namespace shared_model {
           types::TransactionsNumberType page_size,
           boost::optional<types::HashType> first_tx_hash) const;
 
+      FactoryResult<MockGetEngineResponse> constructGetEngineResponse(
+          const std::string &tx_hash) const;
+
      private:
       /**
        * Create the mock object and apply expectations setter on it

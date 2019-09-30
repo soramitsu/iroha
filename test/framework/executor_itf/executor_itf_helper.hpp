@@ -21,6 +21,7 @@
 #include "interfaces/query_responses/block_error_response.hpp"
 #include "interfaces/query_responses/block_query_response.hpp"
 #include "interfaces/query_responses/block_response.hpp"
+#include "interfaces/query_responses/engine_response.hpp"
 #include "interfaces/query_responses/error_query_response.hpp"
 #include "interfaces/query_responses/pending_transactions_page_response.hpp"
 #include "interfaces/query_responses/query_response.hpp"
@@ -68,7 +69,9 @@ namespace iroha {
               shared_model::interface::GetPendingTransactions,
               shared_model::interface::PendingTransactionsPageResponse>,
           boost::mpl::pair<shared_model::interface::GetBlock,
-                           shared_model::interface::BlockResponse>>
+                           shared_model::interface::BlockResponse>,
+          boost::mpl::pair<shared_model::interface::GetEngineResponse,
+                           shared_model::interface::EngineResponse>>
           SpecificQueryResponses;
 
       /// true for specific commands
@@ -106,16 +109,19 @@ namespace iroha {
         if (auto specific_query_response =
                 boost::strict_get<const SpecificQueryResponse &>(
                     &query_result->get())) {
+          return {};
           // TODO: refactor with specific QueryResponse mocks to avoid using
           // proto implementations
+          /*
           return iroha::expected::makeValue(
               std::unique_ptr<SpecificQueryResponse>(
                   clone(specific_query_response)));
+          */
         }
         return iroha::expected::makeError(std::move(query_result));
       }
-    }
-  }  // namespace integration_framework
+    }  // namespace detail
+  }    // namespace integration_framework
 }  // namespace iroha
 
 #endif  // IROHA_TEST_FRAMEWORK_EXECUTOR_ITF_HELPER_HPP
