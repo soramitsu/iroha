@@ -52,7 +52,7 @@ namespace shared_model {
       void validateCallee(ReasonsGroupType &reason,
                           const interface::types::AccountIdType &callee) const;
 
-      void validateInput(
+      void validateBytecode(
           ReasonsGroupType &reason,
           const interface::types::SmartContractCodeType &input) const;
 

@@ -113,7 +113,7 @@ namespace shared_model {
       }
     }
 
-    void FieldValidator::validateInput(
+    void FieldValidator::validateBytecode(
         ReasonsGroupType &reason,
         const interface::types::SmartContractCodeType &input) const {
       // TODO(IvanTyulyandin): add code validator

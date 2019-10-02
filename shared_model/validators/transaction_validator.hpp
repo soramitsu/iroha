@@ -95,7 +95,7 @@ namespace shared_model {
 
         // TODO(IvanTyulyandin): these functions are mocks
         validator_.validateCallee(reason, asc.callee());
-        validator_.validateInput(reason, asc.input());
+        validator_.validateBytecode(reason, asc.input());
         return reason;
       }
 
