@@ -37,11 +37,10 @@ namespace shared_model {
       using TimeFunction = std::function<iroha::ts64_t()>;
 
      public:
-      FieldValidator(std::shared_ptr<ValidatorsConfig> config,
-                     time_t future_gap = kDefaultFutureGap,
-                     TimeFunction time_provider = [] {
-                       return iroha::time::now();
-                     });
+      FieldValidator(
+          std::shared_ptr<ValidatorsConfig> config,
+          time_t future_gap = kDefaultFutureGap,
+          TimeFunction time_provider = [] { return iroha::time::now(); });
 
       void validateAccountId(
           ReasonsGroupType &reason,
@@ -53,8 +52,9 @@ namespace shared_model {
       void validateCallee(ReasonsGroupType &reason,
                           const interface::types::AccountIdType &callee) const;
 
-      void validateInput(ReasonsGroupType &reason,
-                        const interface::types::SmartContractCodeType &input) const;
+      void validateBytecode(
+          ReasonsGroupType &reason,
+          const interface::types::SmartContractCodeType &input) const;
 
       void validatePeer(ReasonsGroupType &reason,
                         const interface::Peer &peer) const;
