@@ -105,10 +105,12 @@ namespace iroha {
               tx_collection.emplace_back(std::move(v).value);
             },
             [this](const auto &error) {
-              status_bus_->publish(status_factory_->makeStatelessFail(
+              auto status = status_factory_->makeStatelessFail(
                   error.error.hash,
                   shared_model::interface::TxStatusFactory::TransactionError{
-                      error.error.error, 0, 0}));
+                      error.error.error, 0, 0});
+              log_->info("{}", *status);
+              status_bus_->publish(std::move(status));
             });
       }
       return tx_collection;
@@ -137,6 +139,7 @@ namespace iroha {
                              [](const auto &tx) { return tx->hash(); });
 
               auto error_msg = formErrorMessage(hashes, error.error);
+              log_->info("{}", error_msg);
               // set error response for each transaction in a batch candidate
               std::for_each(
                   hashes.begin(), hashes.end(), [this, &error_msg](auto &hash) {
