@@ -136,6 +136,6 @@ message Command {
         TransferAsset transfer_asset = 16;
         RemovePeer remove_peer = 17;
         CompareAndSetAccountDetail compare_and_set_account_detail = 18;
-        SetSettingValue set_setting_value = 19;
+        SetSettingValue set_setting_value = 20;
     }
 }
