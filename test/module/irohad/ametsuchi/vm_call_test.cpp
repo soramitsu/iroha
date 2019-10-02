@@ -12,6 +12,7 @@
 #include <boost/mpl/copy.hpp>
 #include <boost/mpl/count.hpp>
 #include <boost/mpl/find.hpp>
+#include <boost/mpl/vector.hpp>
 #include "backend/protobuf/proto_query_response_factory.hpp"
 #include "interfaces/commands/add_asset_quantity.hpp"
 #include "interfaces/commands/add_peer.hpp"
@@ -84,8 +85,8 @@ class TestAccount {
 TEST(VmCallTest, UsageTest) {
   /*
 
-deploySCdata is bytecode from the following Solidity code using online Remix IDE with
-compiler version 0.4.0
+deploySCdata is bytecode from the following Solidity code using online Remix IDE
+with compiler version 0.4.0
 
 pragma solidity ^0.4.0;
 
@@ -218,7 +219,7 @@ contract C {
             const auto iterToValue =
                 (*iterToTestAccount).second.storage.find(key);
             if (iterToValue != (*iterToTestAccount).second.storage.end()) {
-              std::string response = "{\"evm@evm\": {\"" + key + "\": \"" 
+              std::string response = "{\"evm@evm\": {\"" + key + "\": \""
                   + (*iterToValue).second + "\"}}";
               return query_response_factory->createAccountDetailResponse(
                   response, 1, {}, {});
@@ -243,8 +244,11 @@ contract C {
         }
       });
 
-  auto res = VmCall(
-      deploySCdata, caller, callee, &command_executor, &specific_query_executor);
+  auto res = VmCall(deploySCdata,
+                    caller,
+                    callee,
+                    &command_executor,
+                    &specific_query_executor);
   std::cout << "Vm output: " << res.r0 << std::endl;
   ASSERT_TRUE(res.r1);
 
