@@ -127,7 +127,8 @@ class ValidatorsTest : public ::testing::Test {
            refl->MutableMessage(msg, field)
                ->CopyFrom(account_detail_pagination_meta);
          }},
-        {"iroha.protocol.GetBlock.height", setUInt64(height)}};
+        {"iroha.protocol.GetBlock.height", setUInt64(height)},
+        {"iroha.protocol.GetEngineResponse.tx_hash", setString(hash)}};
   }
 
   /**
@@ -244,12 +245,13 @@ class ValidatorsTest : public ::testing::Test {
     detail_key = "key";
     writer = "account@domain";
     callee = "smartContractWillAddressTo";
-    input = "606060405260a18060106000396000f360606040526000357c01000000000000000"
-           "0000000000000000000000000000000000000000090048063d46300fd1460435780"
-           "63ee919d5014606857603f565b6002565b34600257605260048050506082565b604"
-           "0518082815260200191505060405180910390f35b34600257608060048080359060"
-           "200190919050506093565b005b600060006000505490506090565b90565b8060006"
-           "00050819055505b5056";
+    input =
+        "606060405260a18060106000396000f360606040526000357c01000000000000000"
+        "0000000000000000000000000000000000000000090048063d46300fd1460435780"
+        "63ee919d5014606857603f565b6002565b34600257605260048050506082565b604"
+        "0518082815260200191505060405180910390f35b34600257608060048080359060"
+        "200190919050506093565b005b600060006000505490506090565b90565b8060006"
+        "00050819055505b5056";
     // size of public_key and hash are twice bigger `public_key_size` because it
     // is hex representation
     public_key = std::string(public_key_size * 2, '0');
