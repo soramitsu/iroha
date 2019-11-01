@@ -216,7 +216,8 @@ namespace iroha {
             std::forward<CommandType>(command)};
         shared_model::interface::MockCommand cmd;
         EXPECT_CALL(cmd, get()).WillRepeatedly(::testing::ReturnRef(variant));
-        ASSERT_TRUE(val(executor->execute(cmd, creator, not do_validation)));
+        ASSERT_TRUE(
+            val(executor->execute(cmd, creator, "", 0, not do_validation)));
       }
 
       void addPerms(

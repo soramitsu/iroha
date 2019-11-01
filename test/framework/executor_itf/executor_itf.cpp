@@ -7,6 +7,7 @@
 
 #include "ametsuchi/specific_query_executor.hpp"
 #include "ametsuchi/tx_executor.hpp"
+#include "cryptography/signed.hpp"
 #include "framework/config_helper.hpp"
 #include "framework/test_logger.hpp"
 #include "interfaces/permissions.hpp"
@@ -68,8 +69,16 @@ CreateResult ExecutorItf::create(ExecutorItfTarget target) {
 CommandResult ExecutorItf::executeCommandAsAccount(
     const shared_model::interface::Command &cmd,
     const std::string &account_id,
-    bool do_validation) const {
-  return cmd_executor_->execute(cmd, account_id, do_validation);
+    bool do_validation) {
+  last_executed_cmd_meta_ = ExecutedCommandMeta{};
+  last_executed_cmd_meta_->creator_account_id = account_id;
+  last_executed_cmd_meta_->tx_hash = std::to_string(command_counter_++);
+  last_executed_cmd_meta_->cmd_index = 0;
+  return cmd_executor_->execute(cmd,
+                                account_id,
+                                last_executed_cmd_meta_->tx_hash,
+                                last_executed_cmd_meta_->cmd_index,
+                                do_validation);
 }
 
 Result<void, TxExecutionError> ExecutorItf::executeTransaction(
@@ -81,6 +90,16 @@ Result<void, TxExecutionError> ExecutorItf::executeTransaction(
 iroha::ametsuchi::QueryExecutorResult ExecutorItf::executeQuery(
     const shared_model::interface::Query &query) const {
   return query_executor_->execute(query);
+}
+
+iroha::integration_framework::ExecutorItf::SpecificQueryResult<
+    shared_model::interface::EngineResponse>
+ExecutorItf::getLastEngineResultResponse() {
+  assert(last_executed_cmd_meta_);
+  auto query = getMockQueryFactory()->constructGetEngineResponse(
+      last_executed_cmd_meta_->tx_hash);
+  return executeQuery(
+      *query, last_executed_cmd_meta_->creator_account_id, boost::none);
 }
 
 const std::unique_ptr<shared_model::interface::MockCommandFactory>
@@ -95,7 +114,7 @@ const std::unique_ptr<shared_model::interface::MockQueryFactory>
 
 CommandResult ExecutorItf::createRoleWithPerms(
     const std::string &role_id,
-    const shared_model::interface::RolePermissionSet &role_permissions) const {
+    const shared_model::interface::RolePermissionSet &role_permissions) {
   return executeMaintenanceCommand(
       *getMockCommandFactory()->constructCreateRole(role_id, role_permissions));
 }
@@ -104,20 +123,19 @@ CommandResult ExecutorItf::createUserWithPerms(
     const std::string &account_name,
     const std::string &domain,
     const shared_model::crypto::PublicKey &pubkey,
-    const shared_model::interface::RolePermissionSet &role_perms) const {
+    const shared_model::interface::RolePermissionSet &role_perms) {
   return createUserWithPermsInternal(account_name, domain, pubkey, role_perms) |
       [&, this] { return this->grantAllToAdmin(account_name + "@" + domain); };
 }
 
-CommandResult ExecutorItf::createDomain(const std::string &name) const {
+CommandResult ExecutorItf::createDomain(const std::string &name) {
   const std::string default_role = getDefaultRole(name);
   createRoleWithPerms(default_role, {});
   return executeMaintenanceCommand(
       *getMockCommandFactory()->constructCreateDomain(name, default_role));
 }
 
-CommandResult ExecutorItf::grantAllToAdmin(
-    const std::string &account_id) const {
+CommandResult ExecutorItf::grantAllToAdmin(const std::string &account_id) {
   static const std::string admin_role_name =
       getDefaultRole(kAdminName, kDomain);
   shared_model::interface::GrantablePermissionSet all_grantable_perms;
@@ -146,7 +164,7 @@ CommandResult ExecutorItf::createUserWithPermsInternal(
     const std::string &account_name,
     const std::string &domain,
     const shared_model::crypto::PublicKey &pubkey,
-    const shared_model::interface::RolePermissionSet &role_perms) const {
+    const shared_model::interface::RolePermissionSet &role_perms) {
   createDomain(domain);
 
   const std::string account_id = account_name + "@" + domain;
@@ -163,7 +181,7 @@ CommandResult ExecutorItf::createUserWithPermsInternal(
     };
 }
 
-Result<void, std::string> ExecutorItf::prepareState() const {
+Result<void, std::string> ExecutorItf::prepareState() {
   auto create_admin_result = createAdmin();
   if (auto e = resultToOptionalError(create_admin_result)) {
     return makeError(std::string{"Could not create admin account: "}
@@ -172,7 +190,7 @@ Result<void, std::string> ExecutorItf::prepareState() const {
   return {};
 }
 
-CommandResult ExecutorItf::createAdmin() const {
+CommandResult ExecutorItf::createAdmin() {
   shared_model::interface::RolePermissionSet all_role_perms;
   all_role_perms.setAll();
   return createUserWithPermsInternal(

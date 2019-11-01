@@ -55,6 +55,7 @@ add_library(shared_model_proto_backend
     queries/impl/proto_account_detail_pagination_meta.cpp
     queries/impl/proto_account_detail_record_id.cpp
     queries/impl/proto_get_peers.cpp
+    queries/impl/proto_get_engine_response.cpp
     )
 
 if (IROHA_ROOT_PROJECT)
@@ -77,6 +78,8 @@ if (IROHA_ROOT_PROJECT)
       query_responses/impl/proto_get_block_response.cpp
       query_responses/impl/proto_peers_response.cpp
       transaction_responses/impl/proto_tx_response.cpp
+      query_responses/impl/proto_engine_response_record.cpp
+      query_responses/impl/proto_engine_response.cpp
       )
 endif ()
 

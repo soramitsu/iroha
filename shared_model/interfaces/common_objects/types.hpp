@@ -29,6 +29,7 @@ namespace shared_model {
     class Signature;
     class Transaction;
     class Peer;
+    class EngineResponseRecord;
 
     namespace types {
       /// Type of hash
@@ -92,6 +93,8 @@ namespace shared_model {
       using TLSCertificateType = std::string;
       /// Type of the smart contract code
       using SmartContractCodeType = std::string;
+      /// Type of command index within a transaction
+      using CommandIndexType = uint64_t;
 
       enum class BatchType { ATOMIC = 0, ORDERED = 1 };
 
