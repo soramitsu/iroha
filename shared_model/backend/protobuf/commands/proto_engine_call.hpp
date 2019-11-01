@@ -3,21 +3,20 @@
 
 #include "backend/protobuf/common_objects/trivial_proto.hpp"
 #include "commands.pb.h"
-#include "interfaces/commands/add_smart_contract.hpp"
+#include "interfaces/commands/engine_call.hpp"
 
 namespace shared_model {
   namespace proto {
 
-    class AddSmartContract final
-        : public TrivialProto<interface::AddSmartContract,
-                              iroha::protocol::Command> {
+    class EngineCall final
+        : public TrivialProto<interface::EngineCall, iroha::protocol::Command> {
      public:
       template <typename CommandType>
-      explicit AddSmartContract(CommandType &&command);
+      explicit EngineCall(CommandType &&command);
 
-      AddSmartContract(const AddSmartContract &o);
+      EngineCall(const EngineCall &o);
 
-      AddSmartContract(AddSmartContract &&o) noexcept;
+      EngineCall(EngineCall &&o) noexcept;
 
       const interface::types::AccountIdType &caller() const override;
 
@@ -28,7 +27,7 @@ namespace shared_model {
       const interface::types::SmartContractCodeType &input() const override;
 
      private:
-      const iroha::protocol::AddSmartContract &add_smart_contract_;
+      const iroha::protocol::EngineCall &engine_call_;
     };
 
   }  // namespace proto

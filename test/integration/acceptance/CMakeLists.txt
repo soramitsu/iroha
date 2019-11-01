@@ -142,10 +142,10 @@ target_link_libraries(remove_signatory_test
     integration_framework
     )
 
-addtest(add_smart_contract_test
-    add_smart_contract_test.cpp
+addtest(engine_call_test
+    engine_call_test.cpp
     )
-target_link_libraries(add_smart_contract_test
+target_link_libraries(engine_call_test
     acceptance_fixture
     integration_framework
     )
