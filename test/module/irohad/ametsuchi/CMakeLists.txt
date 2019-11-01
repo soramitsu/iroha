@@ -119,6 +119,7 @@ target_link_libraries(ametsuchi_fixture INTERFACE
     SOCI::core
     pg_connection_init
     test_logger
+    vmCall
     )
 
 addtest(k_times_reconnection_strategy_test k_times_reconnection_strategy_test.cpp)

@@ -90,6 +90,8 @@ namespace shared_model {
           std::vector<std::shared_ptr<shared_model::interface::Peer>>;
       /// Type of a TLS certificate
       using TLSCertificateType = std::string;
+      /// Type of the smart contract code
+      using SmartContractCodeType = std::string;
 
       enum class BatchType { ATOMIC = 0, ORDERED = 1 };
 

@@ -87,6 +87,9 @@ add_library(ametsuchi
     impl/in_memory_block_storage_factory.cpp
     )
 
+add_library(vmCall STATIC IMPORTED GLOBAL)
+set_property(TARGET vmCall PROPERTY IMPORTED_LOCATION "${PROJECT_SOURCE_DIR}/irohad/ametsuchi/vmCall.a")
+
 target_link_libraries(ametsuchi
     pg_connection_init
     flat_file_storage
@@ -105,6 +108,7 @@ target_link_libraries(ametsuchi
     failover_callback
     SOCI::postgresql
     SOCI::core
+    vmCall
     )
 
 target_compile_definitions(ametsuchi
