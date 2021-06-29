@@ -255,9 +255,6 @@ jobs:
         CC: [gcc-9] #, gcc-10, clang-10 ]
         CMAKE_USE: ['', -DUSE_BURROW=ON, -DUSE_URSA=ON]
         BuildType: [Debug]
-        # include:
-        #   - { BuildType: Release, CC: gcc-9 }
-        #   - { BuildType: Release, CC: gcc-9, CMAKE_USE: -DUSE_BURROW=ON }
     # env:
     #   VCPKG_BINARY_SOURCES: 'clear;nuget,GitHub,readwrite'
     steps:
@@ -345,6 +342,7 @@ jobs:
           ls -lA $CCACHE_PATH
           $(realpath $CCACHE_PATH/gcc) --show-config
           echo >>$GITHUB_ENV _CCACHE_DIR=$($(realpath $CCACHE_PATH/gcc) --show-config | sed -nE 's,.*cache_dir = ,,p')
+          echo >>$GITHUB_ENV NPROC=$(nproc | awk '{printf("%.0f",$1*0.77)}')
       - name: Restore cache ccache
         uses: actions/cache@v2
         with:
@@ -384,6 +382,7 @@ jobs:
       - name: CMake build
         run: |
           set -x
+          ## reduce memory usage to do not overflow
           cmake --build build --config ${{ matrix.BuildType }} -- -j$(nproc | awk '{printf("%.0f",$1*0.77)}')
         ## Debug   takes 18m44s on regular GitHub runner
         ## Debug   takes 7m41s on self-hosted AWS EC2 c5.x4large
@@ -442,10 +441,10 @@ jobs:
           postgres -D $PWD/postgres_database -p5432 & { sleep .3; kill -0 $!; }  ## use pg_ctl no need &
           createuser -s postgres -p5432
 
+          ## Run module_* tests in parallel and others subsequently
           cd build
-          ##FIXME enable yac when it were fixed lag
-          ctest --output-on-failure -R '^module_' --parallel 4
-          ctest --output-on-failure -R '^integration_' --repeat until-pass:3
+          ctest --output-on-failure -R '^module_' --parallel 8
+          ctest --output-on-failure -E '^module_' --repeat until-pass:3
   build-iroha-ubuntu-release:
     needs: Docker-iroha-builder
     runs-on: [self-hosted, Linux] #ubuntu-latest
@@ -538,6 +537,7 @@ jobs:
           ls -lA $CCACHE_PATH
           $(realpath $CCACHE_PATH/gcc) --show-config
           echo >>$GITHUB_ENV _CCACHE_DIR=$($(realpath $CCACHE_PATH/gcc) --show-config | sed -nE 's,.*cache_dir = ,,p')
+          echo >>$GITHUB_ENV NPROC=$(nproc | awk '{printf("%.0f",$1*0.77)}')
       - name: Restore cache ccache
         uses: actions/cache@v2
         with:
@@ -577,6 +577,7 @@ jobs:
       - name: CMake build
         run: |
           set -x
+          ## reduce memory usage to do not overflow
           cmake --build build --config ${{ matrix.BuildType }} -- -j$(nproc | awk '{printf("%.0f",$1*0.77)}')
         ## Debug   takes 18m44s on regular GitHub runner
         ## Debug   takes 7m41s on self-hosted AWS EC2 c5.x4large
@@ -635,10 +636,10 @@ jobs:
           postgres -D $PWD/postgres_database -p5432 & { sleep .3; kill -0 $!; }  ## use pg_ctl no need &
           createuser -s postgres -p5432
 
+          ## Run module_* tests in parallel and others subsequently
           cd build
-          ##FIXME enable yac when it were fixed lag
-          ctest --output-on-failure -R '^module_' --parallel 4
-          ctest --output-on-failure -R '^integration_' --repeat until-pass:3
+          ctest --output-on-failure -R '^module_' --parallel 8
+          ctest --output-on-failure -E '^module_' --repeat until-pass:3
     strategy:
       fail-fast: false
       matrix:
@@ -728,6 +729,7 @@ jobs:
           ls -lA $CCACHE_PATH
           $(realpath $CCACHE_PATH/gcc) --show-config
           echo >>$GITHUB_ENV _CCACHE_DIR=$($(realpath $CCACHE_PATH/gcc) --show-config | sed -nE 's,.*cache_dir = ,,p')
+          echo >>$GITHUB_ENV NPROC=$(nproc | awk '{printf("%.0f",$1*0.77)}')
         env:
           CC: ${{matrix.CC}}
           CCACHE_PATH: /usr/local/opt/ccache/libexec
@@ -770,6 +772,7 @@ jobs:
       - name: CMake build
         run: |
           set -x
+          ## reduce memory usage to do not overflow
           cmake --build build --config ${{ matrix.BuildType }} -- -j$(nproc | awk '{printf("%.0f",$1*0.77)}')
         ## Debug   takes 18m44s on regular GitHub runner
         ## Debug   takes 7m41s on self-hosted AWS EC2 c5.x4large
@@ -825,10 +828,10 @@ jobs:
           postgres -D $PWD/postgres_database -p5432 & { sleep .3; kill -0 $!; }  ## use pg_ctl no need &
           createuser -s postgres -p5432
 
+          ## Run module_* tests in parallel and others subsequently
           cd build
-          ##FIXME enable yac when it were fixed lag
-          ctest --output-on-failure -R '^module_' --parallel 4
-          ctest --output-on-failure -R '^integration_' --repeat until-pass:3
+          ctest --output-on-failure -R '^module_' --parallel 8
+          ctest --output-on-failure -E '^module_' --repeat until-pass:3
   build-iroha-windows:
     needs: check_workflow_yaml_coressponds_to_src_yaml
     if: ${{ false }} ##FIXME Somehow cmake fails to find GTest and others
@@ -893,6 +896,7 @@ jobs:
       - name: CMake build
         run: |
           set -x
+          ## reduce memory usage to do not overflow
           cmake --build build --config ${{ matrix.BuildType }} -- -j$(nproc | awk '{printf("%.0f",$1*0.77)}')
         ## Debug   takes 18m44s on regular GitHub runner
         ## Debug   takes 7m41s on self-hosted AWS EC2 c5.x4large
@@ -1205,9 +1209,6 @@ jobs:
         CC: [gcc-9] #, gcc-10, clang-10 ]
         CMAKE_USE: ['', -DUSE_BURROW=ON, -DUSE_URSA=ON]
         BuildType: [Debug]
-        # include:
-        #   - { BuildType: Release, CC: gcc-9 }
-        #   - { BuildType: Release, CC: gcc-9, CMAKE_USE: -DUSE_BURROW=ON }
     # env:
     #   <<: *env_dockerhub_release
     #   IMAGE_NAME: iroha-debug
