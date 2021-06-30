@@ -48,6 +48,29 @@ on:
   schedule:
     - cron: '12 22 * * *'
 jobs:
+  check_workflow_yaml_coressponds_to_src_yaml:
+    runs-on: ubuntu-latest
+    name: Check if github workflows were properly made from sources
+    steps:
+      - name: REF and SHA of commented PR to ENV
+        if: github.event.comment
+        run: >
+          curl -fsSL ${{github.event.issue.pull_request.url}} -H "Authorization: token ${{github.token}}" | jq -r '
+
+            "PR_REF="+.head.ref,
+            "PR_SHA="+.head.sha,
+            "PR_NUM="+(.number|tostring),
+            "PR_REPO="+.head.repo.full_name' >>$GITHUB_ENV
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          ref: ${{env.PR_REF}} ## not empty on issue_comment, else default value GITHUB_REF
+          repository: ${{env.PR_REPO}} ## not empty on issue_comment, else default value github.repository, required by forks
+      - run: sudo snap install yq
+      - name: Check if .github/workflows/*.yml correspond to *.src.yml
+        run: |
+          set -x
+          [[ $(./.github/make-workflows.sh -x --worktree) = *"everything is up to date" ]]
   pr_comment_reaction_rocket:
     ## Just to react to valid comment with rocket
     runs-on: ubuntu-latest
@@ -77,6 +100,11 @@ jobs:
           cat >/dev/null <<'END'
             ${{ toJson(github) }}
           END
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          ref: ${{env.PR_REF}} ## not empty on issue_comment, else default value GITHUB_REF
+          repository: ${{env.PR_REPO}} ## not empty on issue_comment, else default value github.repository, required by forks
       - name: Generate matrix for build triggered by chat-ops - comment to PR
         if: github.event.comment && github.event.issue.pull_request
         id: comment_body
@@ -96,7 +124,7 @@ jobs:
           echo "::set-output name=matrix_windows::$(cat matrix_windows)"
       ##TODO report errors and warnings as answer to issue comments
       - name: Reaction confused
-        if: failure()
+        if: failure() && github.event.comment
         run: |
           # send reaction to comment to show build was triggered
           curl ${{github.event.comment.url}}/reactions \
@@ -105,6 +133,7 @@ jobs:
             -H "Accept: application/vnd.github.squirrel-girl-preview+json" \
             -H "Authorization: token ${{github.token}}"
       - name: Reaction rocket
+        if: github.event.comment
         run: |
           # send reaction to comment to show build was triggered
           curl ${{github.event.comment.url}}/reactions \
@@ -118,29 +147,6 @@ jobs:
       matrix_ubuntu_debug: ${{steps.matrixes.outputs.matrix_ubuntu_debug}}
       matrix_macos: ${{steps.matrixes.outputs.matrix_macos}}
       matrix_windows: ${{steps.matrixes.outputs.matrix_windows}}
-  check_workflow_yaml_coressponds_to_src_yaml:
-    runs-on: ubuntu-latest
-    name: Check if github workflows were properly made from sources
-    steps:
-      - name: REF and SHA of commented PR to ENV
-        if: github.event.comment
-        run: >
-          curl -fsSL ${{github.event.issue.pull_request.url}} -H "Authorization: token ${{github.token}}" | jq -r '
-
-            "PR_REF="+.head.ref,
-            "PR_SHA="+.head.sha,
-            "PR_NUM="+(.number|tostring),
-            "PR_REPO="+.head.repo.full_name' >>$GITHUB_ENV
-      - name: Checkout
-        uses: actions/checkout@v2
-        with:
-          ref: ${{env.PR_REF}} ## not empty on issue_comment, else default value GITHUB_REF
-          repository: ${{env.PR_REPO}} ## not empty on issue_comment, else default value github.repository, required by forks
-      - run: sudo snap install yq
-      - name: Check if .github/workflows/*.yml correspond to *.src.yml
-        run: |
-          set -x
-          [[ $(./.github/make-workflows.sh -x --worktree) = *"everything is up to date" ]]
   Docker-iroha-builder:
     needs: check_workflow_yaml_coressponds_to_src_yaml
     runs-on: ubuntu-latest #[ self-hosted, Linux ]
