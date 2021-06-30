@@ -157,6 +157,12 @@ jobs:
       matrix_macos:          ${{steps.matrixes.outputs.matrix_macos}}
       matrix_windows:        ${{steps.matrixes.outputs.matrix_windows}}
 
+  xxx:
+    needs: generate_matrixes
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo ${{ needs.generate_matrixes.outputs.matrix_ubuntu_debug }}
+
   Docker-iroha-builder:
     needs: check_workflow_yaml_coressponds_to_src_yaml
     runs-on: ubuntu-latest #[ self-hosted, Linux ]
