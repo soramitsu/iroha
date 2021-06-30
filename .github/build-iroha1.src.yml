@@ -520,7 +520,9 @@ jobs:
         # build_type: [ Release ]
 
   build-iroha-macos:
-    needs: check_workflow_yaml_coressponds_to_src_yaml
+    needs:
+      - check_workflow_yaml_coressponds_to_src_yaml
+      - generate_matrixes
     runs-on: macos-latest #[ self-hosted, MacOS ] #
     strategy:
       fail-fast: false
