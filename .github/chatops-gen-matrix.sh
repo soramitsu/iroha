@@ -113,7 +113,7 @@ to_json_multiline(){
    echo ]
 }
 json_include(){
-   jq -n ".include=$(to_json_multiline)"
+   jq -cn ".include=$(to_json_multiline)"
 }
 
 MATRIX="$(echo "$MATRIX" | sed '/^$/d' | sort -uV)"
