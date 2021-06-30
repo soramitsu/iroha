@@ -66,6 +66,52 @@ jobs:
             -d '{"content":"rocket"}' \
             -H "Accept: application/vnd.github.squirrel-girl-preview+json" \
             -H "Authorization: token ${{github.token}}"
+  generate_matrixes:
+    runs-on: ubuntu-latest
+    # if: ${{ github.event.comment &&
+    #       github.event.issue.pull_request &&
+    #       startsWith(github.event.comment.body, '/build') }}
+    steps:
+      - name: Show context
+        run: |
+          cat >/dev/null <<'END'
+            ${{ toJson(github) }}
+          END
+      - name: Generate matrix for build triggered by chat-ops - comment to PR
+        if: github.event.comment && github.event.issue.pull_request
+        id: comment_body
+        run: echo "${{github.event.comment.body}}" >/tmp/comment_body
+      - name: Generate default matrix for regular builds
+        if: ${{ steps.comment_body.outcome == 'skipped' }}
+        run: echo "/build" >/tmp/comment_body
+      - name: Generate matrixes
+        id: matrixes
+        run: |
+          set -x
+          cat /tmp/comment_body | .github/chatops-gen-matrix.sh
+          echo "::set-output name=matrix_ubuntu::$(cat matrix_ubuntu)"
+          echo "::set-output name=matrix_macos::$(cat matrix_macos)"
+      ##TODO report errors and warnings as answer to issue comments
+      - name: Reaction confused
+        if: failure()
+        run: |
+          # send reaction to comment to show build was triggered
+          curl ${{github.event.comment.url}}/reactions \
+            -X POST \
+            -d '{"content":"confused"}' \
+            -H "Accept: application/vnd.github.squirrel-girl-preview+json" \
+            -H "Authorization: token ${{github.token}}"
+      - name: Reaction rocket
+        run: |
+          # send reaction to comment to show build was triggered
+          curl ${{github.event.comment.url}}/reactions \
+            -X POST \
+            -d '{"content":"rocket"}' \
+            -H "Accept: application/vnd.github.squirrel-girl-preview+json" \
+            -H "Authorization: token ${{github.token}}"
+    outputs:
+      matrix_ubuntu: ${{steps.matrixes.outputs.matrix_ubuntu}}
+      matrix_macos: ${{steps.matrixes.outputs.matrix_macos}}
   check_workflow_yaml_coressponds_to_src_yaml:
     runs-on: ubuntu-latest
     name: Check if github workflows were properly made from sources
@@ -240,7 +286,9 @@ jobs:
       container_tag: ${{steps.dockertag_already.outputs.container_tag}}
   ## Build in a docker container
   build-iroha-ubuntu-debug:
-    needs: Docker-iroha-builder
+    needs:
+      - Docker-iroha-builder
+      - generate_matrixes
     runs-on: [self-hosted, Linux] #ubuntu-latest
     ## Container is taken from previous job
     container: ${{needs.Docker-iroha-builder.outputs.container}}
@@ -251,10 +299,11 @@ jobs:
     #                         )[needs.Docker-iroha-builder.outputs._dockertag != ''] }}
     strategy:
       fail-fast: false
-      matrix:
-        CC: [gcc-9] #, gcc-10, clang-10 ]
-        CMAKE_USE: ['', -DUSE_BURROW=ON, -DUSE_URSA=ON]
-        BuildType: [Debug]
+      matrix: ${{ fromJSON( needs.generate_matrixes.outputs.matrix_ubuntu_debug ) }}
+      # matrix: &matrix_ubuntu_debug
+      #   CC: [ gcc-9 ] #, gcc-10, clang-10 ]
+      #   CMAKE_USE:  [ '', -DUSE_BURROW=ON, -DUSE_URSA=ON ]
+      #   BuildType: [ Debug ]
     # env:
     #   VCPKG_BINARY_SOURCES: 'clear;nuget,GitHub,readwrite'
     steps:
@@ -446,7 +495,9 @@ jobs:
           ctest --output-on-failure -R '^module_' --parallel 8
           ctest --output-on-failure -E '^module_' --repeat until-pass:3
   build-iroha-ubuntu-release:
-    needs: Docker-iroha-builder
+    needs:
+      - Docker-iroha-builder
+      - generate_matrixes
     runs-on: [self-hosted, Linux] #ubuntu-latest
     ## Container is taken from previous job
     container: ${{needs.Docker-iroha-builder.outputs.container}}
@@ -1205,10 +1256,11 @@ jobs:
     needs: build-iroha-ubuntu-debug
     strategy:
       fail-fast: false
-      matrix:
-        CC: [gcc-9] #, gcc-10, clang-10 ]
-        CMAKE_USE: ['', -DUSE_BURROW=ON, -DUSE_URSA=ON]
-        BuildType: [Debug]
+      matrix: ${{ fromJSON( needs.generate_matrixes.outputs.matrix_ubuntu_debug ) }}
+      # matrix: &matrix_ubuntu_debug
+      #   CC: [ gcc-9 ] #, gcc-10, clang-10 ]
+      #   CMAKE_USE:  [ '', -DUSE_BURROW=ON, -DUSE_URSA=ON ]
+      #   BuildType: [ Debug ]
     # env:
     #   <<: *env_dockerhub_release
     #   IMAGE_NAME: iroha-debug
