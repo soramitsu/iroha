@@ -147,11 +147,6 @@ jobs:
       matrix_ubuntu_debug: ${{steps.matrixes.outputs.matrix_ubuntu_debug}}
       matrix_macos: ${{steps.matrixes.outputs.matrix_macos}}
       matrix_windows: ${{steps.matrixes.outputs.matrix_windows}}
-  xxx:
-    needs: generate_matrixes
-    runs-on: ubuntu-latest
-    steps:
-      - run: echo "${{ needs.generate_matrixes.outputs.matrix_ubuntu }}"
   Docker-iroha-builder:
     needs: check_workflow_yaml_coressponds_to_src_yaml
     runs-on: ubuntu-latest #[ self-hosted, Linux ]
@@ -309,20 +304,9 @@ jobs:
     runs-on: [self-hosted, Linux] #ubuntu-latest
     ## Container is taken from previous job
     container: ${{needs.Docker-iroha-builder.outputs.container}}
-    # container: &container
-    #   ${{ fromJSON( format('["iroha1", "{0}"]', needs.Docker-iroha-builder.outputs.DOCKERHUB_ORG)
-    #                         )[needs.Docker-iroha-builder.outputs.DOCKERHUB_ORG != ''] }}/iroha-builder${{
-    #                         fromJSON(format('[":edge", "{0}"]', needs.Docker-iroha-builder.outputs._dockertag)
-    #                         )[needs.Docker-iroha-builder.outputs._dockertag != ''] }}
     strategy:
       fail-fast: false
       matrix: ${{ fromJSON( needs.generate_matrixes.outputs.matrix_ubuntu_debug ) }}
-      # matrix: &matrix_ubuntu_debug
-      #   CC: [ gcc-9 ] #, gcc-10, clang-10 ]
-      #   CMAKE_USE:  [ '', -DUSE_BURROW=ON, -DUSE_URSA=ON ]
-      #   BuildType: [ Debug ]
-    # env:
-    #   VCPKG_BINARY_SOURCES: 'clear;nuget,GitHub,readwrite'
     steps:
       - name: Show context
         run: |
@@ -519,8 +503,6 @@ jobs:
     runs-on: [self-hosted, Linux] #ubuntu-latest
     ## Container is taken from previous job
     container: ${{needs.Docker-iroha-builder.outputs.container}}
-    # env:
-    #   VCPKG_BINARY_SOURCES: 'clear;nuget,GitHub,readwrite'
     steps:
       - name: Show context
         run: |
@@ -712,13 +694,6 @@ jobs:
     strategy:
       fail-fast: false
       matrix: ${{ fromJSON( needs.generate_matrixes.outputs.matrix_ubuntu_release ) }}
-      # matrix: &matrix_release ${{fromJSON(needs.)}}
-      #   include:
-      #     - { BuildType: Release, CC: gcc-9 }
-      #     - { BuildType: Release, CC: gcc-9, CMAKE_USE: -DUSE_BURROW=ON }
-      # CC:         [ gcc-9 ] #, gcc-10, clang-10 ]
-      # CMAKE_USE:  [ '', -DUSE_BURROW=ON ]
-      # build_type: [ Release ]
   build-iroha-macos:
     needs:
       - check_workflow_yaml_coressponds_to_src_yaml
@@ -988,13 +963,6 @@ jobs:
     strategy:
       fail-fast: false
       matrix: ${{ fromJSON( needs.generate_matrixes.outputs.matrix_ubuntu_release ) }}
-      # matrix: &matrix_release ${{fromJSON(needs.)}}
-      #   include:
-      #     - { BuildType: Release, CC: gcc-9 }
-      #     - { BuildType: Release, CC: gcc-9, CMAKE_USE: -DUSE_BURROW=ON }
-      # CC:         [ gcc-9 ] #, gcc-10, clang-10 ]
-      # CMAKE_USE:  [ '', -DUSE_BURROW=ON ]
-      # build_type: [ Release ]
     #if: matrix.dockerpush == '' || matrix.dockerpush == 'yes'
     env:
       DOCKERHUB_ORG: hyperledger ## Must be hyperledger, also can use iroha1, cannot use ${{ secrets.DOCKERHUB_ORG }}
@@ -1281,10 +1249,6 @@ jobs:
     strategy:
       fail-fast: false
       matrix: ${{ fromJSON( needs.generate_matrixes.outputs.matrix_ubuntu_debug ) }}
-      # matrix: &matrix_ubuntu_debug
-      #   CC: [ gcc-9 ] #, gcc-10, clang-10 ]
-      #   CMAKE_USE:  [ '', -DUSE_BURROW=ON, -DUSE_URSA=ON ]
-      #   BuildType: [ Debug ]
     # env:
     #   <<: *env_dockerhub_release
     #   IMAGE_NAME: iroha-debug
