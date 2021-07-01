@@ -479,9 +479,9 @@ jobs:
         name: CTest, FIXME integration_fake_peer_example_test
         run: |
           set -x
-          initdb --locale=C -E UTF-8 $PWD/postgres_database
+          initdb --locale=C --encoding=UTF-8 --username=postgres $PWD/postgres_database
           postgres -D $PWD/postgres_database -p5432 & { sleep .3; kill -0 $!; }  ## use pg_ctl no need &
-          createuser -s postgres -p5432
+          #createuser -s postgres -p5432
 
           ## Run module_* tests in parallel and others subsequently
           cd build
@@ -495,9 +495,16 @@ jobs:
       fail-fast: false
       matrix: ${{ fromJSON( needs.generate_matrixes.outputs.matrix_ubuntu_release ) }}
 
+  ## Just to align picture
+  prepare-macos-env:
+    needs: check_workflow_yaml_coressponds_to_src_yaml
+    runs-on: macos-latest
+    steps:
+      - *step_show_context
+
   build-iroha-macos:
     needs:
-      - check_workflow_yaml_coressponds_to_src_yaml
+      - prepare-macos-env
       - generate_matrixes
     runs-on: macos-latest #[ self-hosted, MacOS ] #
     strategy:
@@ -562,8 +569,20 @@ jobs:
         ## ToDo may be optimize, i.e. cache package
       - *step_ctest
 
-  build-iroha-windows:
+  ## Just to align picture
+  prepare-windows-env:
     needs: check_workflow_yaml_coressponds_to_src_yaml
+    runs-on: windows-latest
+    steps:
+      - *step_show_context
+    defaults:
+      run:
+        shell: bash
+
+  build-iroha-windows:
+    needs:
+      - prepare-windows-env
+      - generate_matrixes
     if: ${{ false }}  ##FIXME Somehow cmake fails to find GTest and others
     runs-on: windows-latest
     strategy:
@@ -573,7 +592,7 @@ jobs:
       #   BuildYype: [ Debug ] #,Release, RelWithDebInfo
     defaults:
       run:
-        shell: bash  #pwshdefaults:
+        shell: bash  #pwsh
         working-directory: &workdir 'C:\github\iroha'  ## Use disk C: because D: is out of space
     steps:
       - name: Create working-directory, export WORKDIR
