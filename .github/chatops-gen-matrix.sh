@@ -97,7 +97,7 @@ to_json(){
    echo "{
          os:\"$1\",
          cc:\"$2\",
-         build_type:\"$3\",
+         BuildType:\"$3\",
          CMAKE_USE:\"$( [[ "$4" = default ]] || echo "-DUSE_${4^^}=ON" )\",
          dockerpush: \"$dockerpush\"
       }"
