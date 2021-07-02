@@ -221,12 +221,12 @@ node ('master') {
         codestyle = true
         break;
      case 'Commit in Open PR':
-        gitNotify ("Jenkins: Merge to trunk", "Please, run: 'Before merge to trunk'", 'PENDING', env.JOB_URL + "/build")
+        ///Disable yellow status @kuvaldini @BulatSaif https://github.com/hyperledger/iroha/pull/1028#issuecomment-872080478
+        // gitNotify ("Jenkins: Merge to trunk", "Please, run: 'Before merge to trunk'", 'PENDING', env.JOB_URL + "/build")
         echo "All Default"
         break;
      case 'Before merge to trunk':
-        ///Disable yellow status @kuvaldini @BulatSaif https://github.com/hyperledger/iroha/pull/1028#issuecomment-872080478
-        //gitNotify ("Jenkins: Merge to trunk", "Started...", 'PENDING')
+        gitNotify ("Jenkins: Merge to trunk", "Started...", 'PENDING')
         x64linux_compiler_list = ['gcc9', 'gcc10', 'clang10']
         s390xlinux_compiler_list = ['gcc9']
         mac_compiler_list = ['appleclang']
